@@ -16,16 +16,51 @@ export interface SearchResult {
 }
 
 export async function searchZonaprop(url: string, limit: number = 10): Promise<{ properties: SearchResult[], html: string }> {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-blink-features=AutomationControlled'
+    ]
+  });
   const context = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    viewport: { width: 1920, height: 1080 }
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    viewport: { width: 1920, height: 1080 },
+    locale: 'es-AR',
+    timezoneId: 'America/Argentina/Buenos_Aires'
+  });
+
+  // Anti evasiones
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => undefined,
+    });
   });
 
   const page = await context.newPage();
 
+  // Bloquear peticiones innecesarias para velocidad, memoria y Anti-bot
+  await page.route('**/*', (route, request) => {
+    const type = request.resourceType();
+    const reqUrl = request.url();
+
+    if (['font', 'stylesheet', 'media'].includes(type) || reqUrl.endsWith('.css')) {
+      return route.abort();
+    }
+    if (reqUrl.includes('google-analytics') || reqUrl.includes('gtm') || reqUrl.includes('hotjar') || reqUrl.includes('datadog')) {
+      return route.abort();
+    }
+    route.continue();
+  });
+
   console.log(`Searching URL: ${url}`);
   const response = await page.goto(url, { waitUntil: 'load', timeout: 45000 });
+
+  if (!response || response.status() === 403 || response.status() === 429 || response.status() >= 500) {
+    await browser.close();
+    throw new Error(`Bloqueo Anti-Bot o Error de Servidor en /search. Status HTTP: ${response ? response.status() : 'Unknown'}`);
+  }
 
   // Wait explicitly to ensure CF bypass if needed, and for JS to render the cards
   await page.waitForTimeout(10000);
