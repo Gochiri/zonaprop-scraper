@@ -1,6 +1,6 @@
 import { chromium } from 'playwright-extra';
-/* eslint-disable-next-line @typescript-eslint/no-var-requires */
-const stealth = require('puppeteer-extra-plugin-stealth')();
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+const stealth = StealthPlugin();
 chromium.use(stealth);
 import type { Browser, BrowserContext } from 'playwright';
 import * as cheerio from 'cheerio';
