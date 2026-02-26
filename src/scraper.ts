@@ -4,6 +4,7 @@ const stealth = require('puppeteer-extra-plugin-stealth')();
 chromium.use(stealth);
 import type { Browser, BrowserContext } from 'playwright';
 import * as cheerio from 'cheerio';
+import { generatePropertyHtml } from './scraper_html.js';
 
 let globalBrowser: Browser | null = null;
 
@@ -67,7 +68,7 @@ export async function scrapeZonaprop(url: string) {
         const $ = cheerio.load(html);
 
         // 1. EXTRAER TÍTULO
-        let title = $('h1').first().text().trim() || $('title').first().text().split('|')[0].trim();
+        let title = $('h1').first().text().trim() || ($('title').first().text().split('|')[0] || '').trim();
 
         // 2. EXTRAER DATA SCHEMA.ORG (JSON-LD)
         let schemaData: any = null;
@@ -129,7 +130,7 @@ export async function scrapeZonaprop(url: string) {
         const cleanImages = Array.from(rawImages)
             .filter((u: string) => u.length < 500)
             .map((url: string) => {
-                return url.split('?')[0]
+                return (url.split('?')[0] || '')
                     .replace(/\/thumb\//, '/full/')
                     .replace(/\/small\//, '/large/')
                     .replace(/width=\d+/, 'width=1200')
@@ -160,6 +161,8 @@ export async function scrapeZonaprop(url: string) {
                 propertyData.price = `${schemaData.offers.priceCurrency || 'USD'} ${parseInt(schemaData.offers.price).toLocaleString('es-AR')}`;
             }
         }
+
+        propertyData.html = generatePropertyHtml(propertyData);
 
         return {
             success: true,
