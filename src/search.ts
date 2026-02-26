@@ -37,15 +37,14 @@ export async function searchZonaprop(url: string, limit: number = 10): Promise<{
 
   const properties: SearchResult[] = [];
 
-  $('[data-to-posting="PROPERTY"]').first().parent().parent().find('[data-to-posting="PROPERTY"]').each((i, el) => {
+  $('[data-to-posting]').each((i, el) => {
     // Find the card container
     const container = $(el);
 
     const linkRaw = container.attr('data-to-posting');
-    // If it doesn't look like a path, try a inside
     const aTag = container.find('a[target="_blank"]');
-    const href = aTag.attr('href') || linkRaw;
-    const link = href ? (href.startsWith('http') ? href : `https://www.zonaprop.com.ar${href}`) : '';
+    const href = (linkRaw && linkRaw !== 'PROPERTY' && linkRaw.startsWith('/')) ? linkRaw : aTag.attr('href');
+    const link = href ? (href.startsWith('http') ? href.split('?')[0] : `https://www.zonaprop.com.ar${href.split('?')[0]}`) : '';
 
     const price = container.find('[data-qa="POSTING_CARD_PRICE"]').text().trim();
     const location = container.find('[data-qa="POSTING_CARD_LOCATION"]').text().trim();
