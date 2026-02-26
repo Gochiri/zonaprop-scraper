@@ -1,0 +1,297 @@
+{
+  "name": "ZonaProp Scraper - Browserless",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scrape-zonaprop",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "4729609a-44dd-4062-96b0-6a870607216f",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        272
+      ],
+      "webhookId": "zonaprop-scraper"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://devbrowserless.korvance.com/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $json.body.url }}\",\n  \"gotoOptions\": {\n    \"waitUntil\": \"networkidle0\",\n    \"timeout\": 60000\n  }\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "653f3842-a269-4545-a0e8-08c83814ee32",
+      "name": "Browserless Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1536,
+        272
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data || $input.first().json || '';\nconst url = $('Webhook').first().json.body.url;\n\n// Convertir a string si es necesario\nconst htmlStr = typeof html === 'string' ? html : JSON.stringify(html);\n\n// Función helper para extraer con regex\nconst extract = (pattern, text, group = 1) => {\n  const match = text.match(pattern);\n  return match ? match[group]?.trim() : null;\n};\n\nconsole.log('HTML length:', htmlStr.length);\nconsole.log('URL:', url);\n\n// === EXTRAER TÍTULO ===\nlet title = extract(/<h1[^>]*>([^<]+)<\\/h1>/i, htmlStr);\nif (!title) title = extract(/\"name\"\\s*:\\s*\"([^\"]+)\"/i, htmlStr);\nif (!title) title = extract(/<title>([^<|]+)/i, htmlStr);\nif (title) title = title.replace(/\\s*-\\s*ZonaProp.*$/i, '').trim();\n\nconsole.log('Título:', title);\n\n// === EXTRAER PRECIO ===\nlet price = null;\nlet currency = 'USD';\n\n// Buscar en JSON-LD o data attributes\nconst pricePatterns = [\n  /\"price\"\\s*:\\s*\"?([\\d.,]+)\"?/i,\n  /\"formattedAmount\"\\s*:\\s*\"([^\"]+)\"/i,\n  /data-price=[\"']([\\d.,]+)[\"']/i,\n  /class=\"[^\"]*price[^\"]*\"[^>]*>\\s*(?:USD|U\\$S|\\$)?\\s*([\\d.,]+)/i,\n  /(USD|U\\$S)\\s*([\\d.,]+)/i,\n  /([\\d.,]+)\\s*(USD|dólares)/i\n];\n\nfor (const pattern of pricePatterns) {\n  const match = htmlStr.match(pattern);\n  if (match) {\n    // Detectar moneda\n    if (match[0].includes('USD') || match[0].includes('U$S') || match[0].includes('dólares')) {\n      currency = 'USD';\n    } else if (match[0].includes('ARS') || match[0].includes('$')) {\n      currency = 'ARS';\n    }\n    // Extraer número\n    const numMatch = match[0].match(/([\\d.,]+)/);\n    if (numMatch) {\n      price = numMatch[1].replace(/\\./g, '').replace(',', '.');\n      break;\n    }\n  }\n}\n\nconst priceFormatted = price ? `${currency} ${parseInt(price).toLocaleString('es-AR')}` : 'Consultar';\nconsole.log('Precio:', priceFormatted);\n\n// === EXTRAER UBICACIÓN ===\nlet location = extract(/\"address\"\\s*:\\s*\\{[^}]*\"streetAddress\"\\s*:\\s*\"([^\"]+)\"/i, htmlStr);\nif (!location) location = extract(/\"addressLocality\"\\s*:\\s*\"([^\"]+)\"/i, htmlStr);\nif (!location) location = extract(/class=\"[^\"]*location[^\"]*\"[^>]*>([^<]+)/i, htmlStr);\n\n// Detectar barrios de CABA\nconst barriosCaba = [\n  'Palermo Hollywood', 'Palermo Soho', 'Palermo Chico', 'Palermo Viejo', 'Palermo',\n  'Recoleta', 'Belgrano C', 'Belgrano R', 'Belgrano',\n  'Puerto Madero', 'Retiro', 'San Telmo', 'La Boca', 'Barracas',\n  'Caballito', 'Villa Crespo', 'Colegiales', 'Núñez', 'Nuñez',\n  'Saavedra', 'Villa Urquiza', 'Villa Devoto', 'Almagro', 'Boedo', 'Flores'\n];\n\nlet barrio = '';\nfor (const b of barriosCaba) {\n  if (new RegExp(b, 'i').test(htmlStr)) {\n    barrio = b;\n    if (!location) location = `${b}, CABA`;\n    break;\n  }\n}\n\nconsole.log('Ubicación:', location);\n\n// === EXTRAER DESCRIPCIÓN ===\nlet description = extract(/\"description\"\\s*:\\s*\"([^\"]{50,500})\"/i, htmlStr);\nif (!description) {\n  description = extract(/class=\"[^\"]*description[^\"]*\"[^>]*>([\\s\\S]{50,500}?)</i, htmlStr);\n}\nif (description) {\n  description = description\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\\\n/g, ' ')\n    .replace(/\\\\r/g, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// === EXTRAER CARACTERÍSTICAS ===\nlet totalArea = extract(/(\\d+)\\s*m²?\\s*(?:tot|sup|total)/i, htmlStr);\nif (!totalArea) totalArea = extract(/superficie[^\\d]*(\\d+)/i, htmlStr);\nif (!totalArea) totalArea = extract(/\"floorSize\"[^}]*\"value\"\\s*:\\s*\"?(\\d+)/i, htmlStr);\n\nlet coveredArea = extract(/(\\d+)\\s*m²?\\s*cub/i, htmlStr);\n\nlet rooms = extract(/(\\d+)\\s*amb/i, htmlStr);\nif (!rooms) rooms = extract(/\"numberOfRooms\"\\s*:\\s*\"?(\\d+)/i, htmlStr);\n\nlet bedrooms = extract(/(\\d+)\\s*(?:dorm|habit)/i, htmlStr);\nif (!bedrooms) bedrooms = extract(/\"numberOfBedrooms\"\\s*:\\s*\"?(\\d+)/i, htmlStr);\n\nlet bathrooms = extract(/(\\d+)\\s*baño/i, htmlStr);\nif (!bathrooms) bathrooms = extract(/\"numberOfBathroomsTotal\"\\s*:\\s*\"?(\\d+)/i, htmlStr);\n\nconsole.log('Características:', { totalArea, rooms, bedrooms, bathrooms });\n\n// === EXTRAER AMENITIES ===\nconst amenityPatterns = [\n  { regex: /pileta|piscina/gi, name: 'Pileta' },\n  { regex: /gimnasio/gi, name: 'Gimnasio' },\n  { regex: /quincho/gi, name: 'Quincho' },\n  { regex: /parrilla/gi, name: 'Parrilla' },\n  { regex: /cochera|garage|estacionamiento/gi, name: 'Cochera' },\n  { regex: /seguridad|vigilancia/gi, name: 'Seguridad 24hs' },\n  { regex: /\\bsum\\b|salón de usos/gi, name: 'SUM' },\n  { regex: /balcón/gi, name: 'Balcón' },\n  { regex: /terraza/gi, name: 'Terraza' },\n  { regex: /jardín/gi, name: 'Jardín' },\n  { regex: /ascensor/gi, name: 'Ascensor' },\n  { regex: /aire acondicionado/gi, name: 'Aire Acondicionado' },\n  { regex: /calefacción/gi, name: 'Calefacción' },\n  { regex: /luminoso/gi, name: 'Luminoso' },\n  { regex: /laundry|lavadero/gi, name: 'Lavadero' },\n  { regex: /baulera/gi, name: 'Baulera' },\n  { regex: /solarium/gi, name: 'Solarium' },\n  { regex: /hidromasaje|jacuzzi/gi, name: 'Hidromasaje' }\n];\n\nconst amenities = [];\namenityPatterns.forEach(({ regex, name }) => {\n  if (regex.test(htmlStr)) amenities.push(name);\n});\n\nconsole.log('Amenities:', amenities);\n\n// === EXTRAER IMÁGENES ===\nlet images = [];\n\n// 1. Buscar en JSON-LD (más confiable)\nconst jsonLdMatch = htmlStr.match(/<script[^>]*type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi);\nif (jsonLdMatch) {\n  jsonLdMatch.forEach(script => {\n    const imgMatches = script.match(/\"image\"\\s*:\\s*\\[?([^\\]]+)\\]?/gi);\n    if (imgMatches) {\n      imgMatches.forEach(block => {\n        const urls = block.match(/https?:\\/\\/[^\"'\\s,]+\\.(?:jpg|jpeg|png|webp)[^\"'\\s,]*/gi);\n        if (urls) images.push(...urls);\n      });\n    }\n  });\n}\n\n// 2. Buscar og:image\nconst ogImages = htmlStr.match(/<meta[^>]*property=[\"']og:image[\"'][^>]*content=[\"']([^\"']+)[\"']/gi);\nif (ogImages) {\n  ogImages.forEach(tag => {\n    const url = tag.match(/content=[\"']([^\"']+)[\"']/i);\n    if (url && url[1]) images.unshift(url[1]);\n  });\n}\n\n// 3. Buscar en CDNs específicos de ZonaProp/Navent\nconst cdnPatterns = [\n  /https?:\\/\\/[\\w.-]*imgar\\.zonapropcdn\\.com\\/[^\"'\\s<>]+/gi,\n  /https?:\\/\\/[\\w.-]*imgcdn\\.zonaprop[^\"'\\s<>]+\\.(?:jpg|jpeg|png|webp)/gi,\n  /https?:\\/\\/[\\w.-]*tokkobroker[^\"'\\s<>]+\\.(?:jpg|jpeg|png|webp)/gi,\n  /https?:\\/\\/[\\w.-]*navent[^\"'\\s<>]+\\.(?:jpg|jpeg|png|webp)/gi,\n  /https?:\\/\\/[\\w.-]*static[\\w.-]*\\/[^\"'\\s<>]+\\.(?:jpg|jpeg|png|webp)/gi,\n  /https?:\\/\\/[\\w.-]*cloudfront[^\"'\\s<>]+\\.(?:jpg|jpeg|png|webp)/gi\n];\n\ncdnPatterns.forEach(pattern => {\n  const matches = htmlStr.match(pattern);\n  if (matches) images.push(...matches);\n});\n\n// 4. Buscar en img tags con data-src o src\nconst imgTags = htmlStr.match(/<img[^>]+(?:data-src|src)=[\"']([^\"']+)[\"'][^>]*>/gi);\nif (imgTags) {\n  imgTags.forEach(tag => {\n    const srcMatch = tag.match(/(?:data-src|src)=[\"']([^\"']+)[\"']/i);\n    if (srcMatch && srcMatch[1].startsWith('http')) {\n      images.push(srcMatch[1]);\n    }\n  });\n}\n\n// Limpiar y filtrar imágenes\nimages = [...new Set(images)]\n  .filter(url => {\n    const u = url.toLowerCase();\n    return u.startsWith('http') &&\n           !u.includes('logo') &&\n           !u.includes('avatar') &&\n           !u.includes('icon') &&\n           !u.includes('pixel') &&\n           !u.includes('tracking') &&\n           !u.includes('banner') &&\n           !u.includes('sprite') &&\n           !u.includes('placeholder') &&\n           !u.includes('1x1') &&\n           !u.includes('watermark') &&\n           !u.includes('favicon') &&\n           !u.includes('brand') &&\n           !u.includes('selo') &&\n           u.length < 500 &&\n           u.length > 30;\n  })\n  .map(url => {\n    // Limpiar y mejorar resolución\n    return url\n      .split('?')[0]\n      .replace(/\\/thumb\\//, '/full/')\n      .replace(/\\/small\\//, '/large/')\n      .replace(/_thumb/, '')\n      .replace(/_small/, '_large')\n      .replace(/width=\\d+/, 'width=1200')\n      .replace(/height=\\d+/, 'height=900')\n      .replace(/w=\\d+/, 'w=1200')\n      .replace(/h=\\d+/, 'h=900');\n  })\n  .slice(0, 15);\n\nconsole.log('Imágenes encontradas:', images.length);\n\n// === CONSTRUIR RESULTADO ===\nconst result = {\n  success: images.length > 0,\n  data: {\n    title: title || 'Propiedad en venta',\n    price: priceFormatted,\n    location: location || barrio || 'Argentina',\n    totalArea: totalArea ? `${totalArea} m²` : '',\n    coveredArea: coveredArea ? `${coveredArea} m²` : '',\n    rooms: rooms || '',\n    bedrooms: bedrooms || '',\n    bathrooms: bathrooms || '',\n    description: description || '',\n    amenities: [...new Set(amenities)],\n    images: images\n  },\n  sourceUrl: url,\n  scrapedAt: new Date().toISOString()\n};\n\nif (images.length === 0) {\n  result.error = 'No se encontraron imágenes de la propiedad.';\n  result.suggestion = 'Intenta usar el modo \"Pegar Texto\" copiando el contenido de la página.';\n}\n\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log('📊 EXTRACCIÓN COMPLETADA');\nconsole.log('Título:', result.data.title);\nconsole.log('Precio:', result.data.price);\nconsole.log('Ubicación:', result.data.location);\nconsole.log('Imágenes:', images.length);\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\n\nreturn result;"
+      },
+      "id": "1357ce1c-86b6-4852-8fbc-0251af94d6e5",
+      "name": "Extraer Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-success",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "10b97fe5-0248-4f13-b19d-b9d681016800",
+      "name": "¿Éxito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d3330900-c0d2-4fc4-ae2d-464b9dbf52c6",
+      "name": "Respuesta Exitosa",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"{{ $json.error || 'No se pudieron extraer imágenes' }}\",\n  \"suggestion\": \"{{ $json.suggestion || 'Intenta copiar y pegar el texto de la publicación.' }}\",\n  \"data\": {{ JSON.stringify($json.data || {}) }}\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "80d60ff4-697f-452c-8036-5b5f6bae998c",
+      "name": "Respuesta Parcial",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"No se pudo acceder a la página. El sitio puede estar protegido.\",\n  \"suggestion\": \"Intenta copiar y pegar el texto de la publicación manualmente.\"\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "50514c6f-ea2d-4098-ad10-46243687d6d5",
+      "name": "Respuesta Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1328,
+        464
+      ]
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "devn8n.korvance.com",
+            "user-agent": "PostmanRuntime/7.49.1",
+            "content-length": "119",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "content-type": "application/json",
+            "postman-token": "cd5a0cdf-9350-4d66-9760-2c1afa6264fa",
+            "x-forwarded-for": "186.138.30.70",
+            "x-forwarded-host": "devn8n.korvance.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "5cd6c79a357b",
+            "x-real-ip": "186.138.30.70"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "url": "https://www.zonaprop.com.ar/propiedades/departamento-en-venta-2-ambientes-en-palermo-54833329.html"
+          },
+          "webhookUrl": "https://devwebhookn8n.korvance.com/webhook/scrape-zonaprop",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Browserless Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Browserless Fetch": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos": {
+      "main": [
+        [
+          {
+            "node": "¿Éxito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Éxito?": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Exitosa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Parcial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "versionId": "414131cf-9ad1-4d15-ba68-850b5984cf3a",
+  "meta": {
+    "instanceId": "5b2372f2635dd70951ede88a3062b4f50e8510b33f9ee8dc8789ff1da1d702e4"
+  },
+  "id": "ae4CY6ws14ee45Gd",
+  "tags": []
+}
