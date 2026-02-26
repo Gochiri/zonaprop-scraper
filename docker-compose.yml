@@ -2,12 +2,8 @@ version: '3.8'
 
 services:
   zonaprop-scraper:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: zonaprop-scraper
+    image: ghcr.io/gochiri/zonaprop-scraper:latest
     ports:
       - "3000:3000"
-    restart: unless-stopped
     environment:
       - NODE_ENV=production
