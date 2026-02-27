@@ -172,6 +172,12 @@ export async function scrapeZonaprop(url: string) {
             expenses = expText;
         }
 
+        let fullDescription = '';
+        const descNodes = $('#reactDescription, .section-description, [data-qa="DESC"], #longDescription');
+        if (descNodes.length > 0) {
+            fullDescription = descNodes.first().text().replace(/\s+/g, ' ').trim();
+        }
+
         // 6. CONSTRUIR RESULTADO ESTRUCTURADO
         const propertyData: any = {
             title,
@@ -181,6 +187,7 @@ export async function scrapeZonaprop(url: string) {
             featuresList,
             amenities,
             sourceUrl: url,
+            description: fullDescription || (schemaData ? schemaData.description : ''),
             details: {
                 hasSchemaLd: !!schemaData,
                 hasNextData: !!nextData
@@ -188,7 +195,6 @@ export async function scrapeZonaprop(url: string) {
         };
 
         if (schemaData) {
-            if (schemaData.description) propertyData.description = schemaData.description;
             if (schemaData.address) {
                 propertyData.location = typeof schemaData.address === 'string'
                     ? schemaData.address

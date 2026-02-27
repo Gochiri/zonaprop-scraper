@@ -16,7 +16,8 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     let cleanDescription = description
         .replace(/Corredor Responsable:.*?\./gi, '')
         .replace(/Contacto:.*?\./gi, '')
-        .replace(/Matricula .*?\./gi, '');
+        .replace(/Matricula .*?\./gi, '')
+        .replace(/Leer descripci[óo]n completa/gi, '');
 
     const wpPhone = process.env.AGENCY_WHATSAPP || '5491100000000';
     const wpText = encodeURIComponent(`Hola, quisiera recibir más información sobre la propiedad código ${zonapropId} que vi en el catálogo exclusivo.`);
