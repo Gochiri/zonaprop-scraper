@@ -136,13 +136,44 @@ export async function scrapeZonaprop(url: string) {
                     .replace(/width=\d+/, 'width=1200')
                     .replace(/height=\d+/, 'height=900');
             })
-            .slice(0, 20);
+            .slice(0, 30); // Up to 30 images as requested
+
+        // Extracción de features y amenities exactos
+        const formatText = (t: string) => t.replace(/\s+/g, ' ').trim();
+
+        let featuresList: string[] = [];
+        $('ul.section-icon-features li, .main-features li, [class*="icon-dir"], .section-main-features ul li').each((_, el) => {
+            const text = formatText($(el).text());
+            if (text && text.length < 30 && !text.toLowerCase().includes('ver más')) {
+                featuresList.push(text);
+            }
+        });
+        featuresList = [...new Set(featuresList)]; // Deduplicar
+
+        let amenities: string[] = [];
+        $('[class*="ameniti"] li, [class*="generales"] li, [class*="servicios"] li, #ver-mapa + div li, h2:contains("Características") + ul li, h2:contains("Adicionales") + ul li').each((_, el) => {
+            const text = formatText($(el).text());
+            if (text && text.length > 2 && text.length < 50) {
+                amenities.push(text);
+            }
+        });
+        // Remove those that are already in featuresList
+        amenities = [...new Set(amenities)].filter(a => !featuresList.includes(a));
+
+        let expenses = '';
+        const expText = formatText($('.price-expenses').text() || $('[class*="expense"]').first().text());
+        if (expText.toLowerCase().includes('expensas') || expText.includes('$')) {
+            expenses = expText;
+        }
 
         // 6. CONSTRUIR RESULTADO ESTRUCTURADO
         const propertyData: any = {
             title,
             price: price ? `${currency} ${price.toLocaleString('es-AR')}` : 'Consultar',
+            expenses,
             images: cleanImages,
+            featuresList,
+            amenities,
             sourceUrl: url,
             details: {
                 hasSchemaLd: !!schemaData,

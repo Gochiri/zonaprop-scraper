@@ -14,6 +14,7 @@ export interface SearchResult {
   description: string;
   image: string;
   link: string;
+  zonapropId?: string; // Cód de la propiedad
 }
 
 export async function searchZonaprop(url: string, limit: number = 10): Promise<{ properties: SearchResult[], html: string }> {
@@ -111,41 +112,59 @@ export async function searchZonaprop(url: string, limit: number = 10): Promise<{
       if (!description) description = rawText.substring(0, 150) + "...";
 
       if (price && properties.length < limit) {
+        // Extraer Código Zonaprop de la URL original
+        let zonapropId = '';
+        const idMatch = link?.match(/-(\d+)\.html/);
+        if (idMatch && idMatch[1]) {
+          zonapropId = idMatch[1];
+        }
+
         properties.push({
           title: titleMatch,
           price,
-          link,
+          link: link || '',
           image,
           features,
           location: location || '',
-          description: description || ''
+          description: description || '',
+          zonapropId
         });
       }
     }
   });
 
   // Generate Beautiful HTML representing the list
+  const publicDomain = process.env.PUBLIC_URL || 'http://localhost:3000';
+
   const htmlOut = `
   <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
     <h2 style="color: #333; border-bottom: 2px solid #ff5a5f; padding-bottom: 10px;">Resultados de Búsqueda</h2>
     <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
-      ${properties.map(p => `
-      <a href="${p.link}" target="_blank" style="text-decoration: none; color: inherit;">
+      ${properties.map(p => {
+    // Usamos nuestro endpoint de "vista", pasando el ID y la URL codificada por si la necesitamos de backup
+    const vistaUrl = `${publicDomain}/vista/${p.zonapropId || 'error'}?url=${encodeURIComponent(p.link)}`;
+
+    return `
+      <a href="${vistaUrl}" target="_blank" style="text-decoration: none; color: inherit;">
         <div style="display: flex; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; background: #fff;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';">
           <div style="width: 280px; min-width: 280px; height: 200px; background-image: url('${p.image || 'https://via.placeholder.com/280x200?text=Sin+Foto'}'); background-size: cover; background-position: center;"></div>
           <div style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
             <div>
-              <div style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 8px;">${p.price}</div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 8px;">${p.price}</div>
+                ${p.zonapropId ? `<div style="font-size: 11px; background: #eef2f5; color: #5a6b7c; padding: 4px 8px; border-radius: 4px; font-weight: bold; letter-spacing: 0.5px;">Cód. Zonaprop: ${p.zonapropId}</div>` : ''}
+              </div>
               <div style="font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500;">${p.location}</div>
               <div style="font-size: 13px; color: #555; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 12px;">${p.features}</div>
               <div style="font-size: 13px; color: #777; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.description}</div>
             </div>
             <div style="align-self: flex-start; margin-top: 10px;">
-              <span style="display: inline-block; background-color: #fce7e8; color: #ff5a5f; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Ver Detalles</span>
+              <span style="display: inline-block; background-color: #fce7e8; color: #ff5a5f; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Contactar a Asesor</span>
             </div>
           </div>
         </div>
-      </a>`).join('')}
+      </a>`;
+  }).join('')}
     </div>
   </div>`;
 

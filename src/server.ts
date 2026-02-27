@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { scrapeZonaprop } from './scraper.js';
 import { searchZonaprop } from './search.js';
+import { renderRebrandedPropertyHtml } from './rebranded_html.js';
 
 const fastify = Fastify({
   logger: true
@@ -45,6 +46,31 @@ fastify.post('/api/search', async (request, reply) => {
   } catch (error: any) {
     fastify.log.error(error);
     return reply.code(500).send({ success: false, error: 'Error interno del servidor en search.' });
+  }
+});
+
+fastify.get('/vista/:id', async (request, reply) => {
+  try {
+    const { id } = request.params as any;
+    const query = request.query as any;
+    const { url } = query;
+
+    if (!url) {
+      return reply.code(400).type('text/html').send('<h1>Error: Falta la URL original en los parámetros.</h1>');
+    }
+
+    fastify.log.info(`Renderizando vista para propiedad ID: ${id}`);
+    const result = await scrapeZonaprop(url);
+
+    if (result.success && result.data) {
+      const html = renderRebrandedPropertyHtml(result.data, id);
+      return reply.type('text/html').send(html);
+    } else {
+      return reply.code(500).type('text/html').send(`<h1>Error al cargar la propiedad</h1><p>${result.error}</p>`);
+    }
+  } catch (error: any) {
+    fastify.log.error(error);
+    return reply.code(500).type('text/html').send('<h1>Error interno del servidor.</h1>');
   }
 });
 
