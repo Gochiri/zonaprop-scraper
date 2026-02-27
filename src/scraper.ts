@@ -107,25 +107,31 @@ export async function scrapeZonaprop(url: string) {
         // 5. IMÁGENES
         const rawImages = new Set<string>();
 
-        if (schemaData && schemaData.image) {
-            if (Array.isArray(schemaData.image)) schemaData.image.forEach((i: string) => rawImages.add(i));
-            else rawImages.add(schemaData.image);
-        }
-
-        if (rawImages.size === 0 && nextData) {
+        if (nextData) {
             const dataStr = JSON.stringify(nextData);
             const urls = dataStr.match(/https?:\/\/[^"'\s,]+(?:imgar\.zonapropcdn\.com|imgcdn\.zonaprop)[^"'\s,]+\.(?:jpg|jpeg|webp)/gi);
             if (urls) urls.forEach(u => rawImages.add(u));
         }
 
-        if (rawImages.size === 0) {
-            $('img').each((_, el) => {
-                const src = $(el).attr('data-src') || $(el).attr('src');
-                if (src && src.startsWith('http') && !src.includes('logo')) {
-                    rawImages.add(src);
-                }
-            });
+        if (schemaData && schemaData.image) {
+            if (Array.isArray(schemaData.image)) schemaData.image.forEach((i: string) => rawImages.add(i));
+            else rawImages.add(schemaData.image);
         }
+
+        $('script').each((_, el) => {
+            const s = $(el).html();
+            if (s && s.includes('imgar.zonapropcdn.com')) {
+                const matches = s.match(/https?:\/\/[^"'\s,]+(?:imgar\.zonapropcdn\.com|imgcdn\.zonaprop)[^"'\s,<>\)\]]+(?:jpg|jpeg|webp|png)/gi);
+                if (matches) matches.forEach(m => rawImages.add(m));
+            }
+        });
+
+        $('img').each((_, el) => {
+            const src = $(el).attr('data-src') || $(el).attr('src');
+            if (src && src.startsWith('http') && !src.includes('logo')) {
+                rawImages.add(src);
+            }
+        });
 
         const cleanImages = Array.from(rawImages)
             .filter((u: string) => u.length < 500)

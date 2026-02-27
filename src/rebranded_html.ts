@@ -4,7 +4,7 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     const firstImage = images.length > 0 ? images[0] : 'https://via.placeholder.com/1200x800?text=Sin+Foto';
 
     // Resto de la galería (thumbnail grid)
-    const restImages = images.slice(1, 9); // Mostrar hasta 8 imagenes más en la grilla para no sobrecargar
+    const restImages = images.slice(1, 5); // Mostrar 4 imagenes en la grilla para no sobrecargar
     const galleryHtml = restImages.map((img: string) => `<img src="${img}" alt="Propiedad" class="gallery-thumb" onclick="openLightbox(this.src)">`).join('');
 
     const title = propertyData.title || propertyData.location || 'Propiedad Exclusiva';
