@@ -133,40 +133,87 @@ export async function searchZonaprop(url: string, limit: number = 10): Promise<{
     }
   });
 
-  // Generate Beautiful HTML representing the list
+  // Read logo dynamically and cache it at module level to avoid blocking
+  let logoBase64 = '';
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const logoPath = path.join(process.cwd(), 'assets', 'JUEJATI naranja (1).png');
+    logoBase64 = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+  } catch (e) {
+    console.error('Logo not found', e);
+  }
+
   const publicDomain = process.env.PUBLIC_URL || 'http://localhost:3000';
 
   const htmlOut = `
-  <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #333; border-bottom: 2px solid #ff5a5f; padding-bottom: 10px;">Resultados de Búsqueda</h2>
-    <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
-      ${properties.map(p => {
-    // Usamos nuestro endpoint de "vista", pasando el ID y la URL codificada por si la necesitamos de backup
-    const vistaUrl = `${publicDomain}/vista/${p.zonapropId || 'error'}?url=${encodeURIComponent(p.link)}`;
-
-    return `
-      <a href="${vistaUrl}" target="_blank" style="text-decoration: none; color: inherit;">
-        <div style="display: flex; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; background: #fff;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';">
-          <div style="width: 280px; min-width: 280px; height: 200px; background-image: url('${p.image || 'https://via.placeholder.com/280x200?text=Sin+Foto'}'); background-size: cover; background-position: center;"></div>
-          <div style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 8px;">${p.price}</div>
-                ${p.zonapropId ? `<div style="font-size: 11px; background: #eef2f5; color: #5a6b7c; padding: 4px 8px; border-radius: 4px; font-weight: bold; letter-spacing: 0.5px;">Cód. Zonaprop: ${p.zonapropId}</div>` : ''}
-              </div>
-              <div style="font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500;">${p.location}</div>
-              <div style="font-size: 13px; color: #555; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 12px;">${p.features}</div>
-              <div style="font-size: 13px; color: #777; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.description}</div>
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Resultados de Búsqueda</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <style>body { font-family: 'Inter', sans-serif; }</style>
+  </head>
+  <body class="bg-zinc-50 text-zinc-900 antialiased min-h-screen">
+    
+    <header class="bg-white border-b border-zinc-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="h-10 object-contain">` : `<div class="font-extrabold text-2xl tracking-tight text-orange-600">Catálogo Exclusivo</div>`}
+            <div class="text-sm font-semibold text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
+                ${properties.length} Propiedades
             </div>
-            <div style="align-self: flex-start; margin-top: 10px;">
-              <span style="display: inline-block; background-color: #fce7e8; color: #ff5a5f; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Contactar a Asesor</span>
-            </div>
-          </div>
         </div>
-      </a>`;
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="space-y-6">
+        ${properties.map(p => {
+    const vistaUrl = `${publicDomain}/vista/${p.zonapropId || 'error'}?url=${encodeURIComponent(p.link)}`;
+    return `
+            <a href="${vistaUrl}" target="_blank" class="block group cursor-pointer">
+              <div class="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-auto md:h-56">
+                <!-- Image Section -->
+                <div class="w-full md:w-[320px] h-56 md:h-full shrink-0 overflow-hidden relative">
+                  <img src="${p.image || 'https://via.placeholder.com/600x400?text=Sin+Foto'}" alt="Propiedad" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                  <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-zinc-800 shadow-sm">
+                    Destacado
+                  </div>
+                </div>
+                <!-- Content Section -->
+                <div class="p-6 flex flex-col justify-between flex-1">
+                  <div>
+                    <div class="flex justify-between items-start mb-2">
+                      <div class="text-2xl font-extrabold text-zinc-900 tracking-tight">${p.price}</div>
+                      ${p.zonapropId ? `<span class="text-[10px] uppercase tracking-wider font-bold bg-orange-100 text-orange-700 px-2 py-1 rounded">Ref: ${p.zonapropId}</span>` : ''}
+                    </div>
+                    <h3 class="text-base font-semibold text-zinc-600 mb-3 truncate">${p.location}</h3>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500 mb-4 pb-4 border-b border-zinc-100">
+                      ${p.features.split('•').map((f: string) => `<span class="flex items-center gap-1">
+                          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                          ${f.trim()}
+                      </span>`).join('')}
+                    </div>
+                    <p class="text-sm text-zinc-500 line-clamp-2 leading-relaxed">
+                      ${p.description}
+                    </p>
+                  </div>
+                  <div class="mt-4 flex justify-end">
+                    <span class="inline-flex items-center justify-center rounded-lg bg-orange-50 text-orange-600 px-4 py-2 text-sm font-semibold group-hover:bg-orange-600 group-hover:text-white transition-colors duration-200">
+                      Ver Propiedad
+                      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </a>`;
   }).join('')}
-    </div>
-  </div>`;
+      </div>
+    </main>
+  </body>
+  </html>`;
 
   return { properties, html: htmlOut };
 }

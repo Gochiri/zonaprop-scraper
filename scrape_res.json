@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "data": {
+    "title": "Departamento Piso en Venta en Barrio Norte, Capital Federal, Buenos Aires",
+    "price": "USD 1.150.000",
+    "expenses": "",
+    "images": [
+      "https://imgar.zonapropcdn.com/avisos/1/00/57/98/61/60/720x532/2022335380.jpg"
+    ],
+    "featuresList": [
+      "239 m² tot.",
+      "239 m² cub.",
+      "3 amb.",
+      "2 baños",
+      "1 coch.",
+      "2 dorm.",
+      "40 años",
+      "Frente",
+      "E"
+    ],
+    "amenities": [],
+    "sourceUrl": "https://www.zonaprop.com.ar/propiedades/veclapin-departamento-piso-en-venta-en-barrio-norte-capital-57986160.html",
+    "details": {
+      "hasSchemaLd": true,
+      "hasNextData": false
+    },
+    "description": "Edificio Mario Roberto Alvarez. Piso de Categoría con Importantes Vistas al Rio, Barrio Parque y Plaza República de Chile. Living con balcó...Palermo Chico",
+    "location": "Av. Figueroa Alcorta 3000",
+    "html": "\n    <div style=\"font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1200px; margin: 0 auto; color: #1a1a1a; padding: 20px;\">\n        <!-- Header / Location -->\n        <div style=\"margin-bottom: 20px;\">\n            <div style=\"font-size: 14px; color: #484848; margin-bottom: 8px;\">Av. Figueroa Alcorta 3000</div>\n        </div>\n\n        <!-- Image Gallery -->\n        <div style=\"display: flex; gap: 10px; margin-bottom: 40px; height: 400px;\">\n            <div style=\"flex: 2; border-radius: 12px 0 0 12px; overflow: hidden;\">\n                <img src=\"https://imgar.zonapropcdn.com/avisos/1/00/57/98/61/60/720x532/2022335380.jpg\" style=\"width: 100%; height: 100%; object-fit: cover;\" />\n            </div>\n            <div style=\"flex: 1; display: flex; flex-direction: column; gap: 10px; border-radius: 0 12px 12px 0; overflow: hidden;\">\n                \n            </div>\n        </div>\n\n        <!-- Content Grid -->\n        <div style=\"display: grid; grid-template-columns: 2fr 1fr; gap: 40px;\">\n            \n            <!-- Main Content -->\n            <div>\n                <h1 style=\"font-size: 28px; margin: 0 0 20px 0;\">Departamento Piso en Venta en Barrio Norte, Capital Federal, Buenos Aires</h1>\n                <div style=\"font-size: 28px; font-weight: bold; margin-bottom: 30px;\">USD 1.150.000</div>\n                \n                <!-- Features Grid -->\n                <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-bottom: 30px;\">\n                    \n                </div>\n\n                <!-- Description -->\n                <h3 style=\"font-size: 18px; margin-bottom: 16px;\">Descripción</h3>\n                <div style=\"font-size: 15px; line-height: 1.6; color: #484848; white-space: pre-wrap;\">Edificio Mario Roberto Alvarez. Piso de Categoría con Importantes Vistas al Rio, Barrio Parque y Plaza República de Chile. Living con balcó...Palermo Chico</div>\n            </div>\n\n            <!-- Sidebar / Form -->\n            <div>\n                <div style=\"border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 20px;\">\n                    <h3 style=\"margin: 0 0 20px 0; font-size: 18px;\">Contactar anunciante</h3>\n                    <input type=\"text\" placeholder=\"Nombre\" style=\"width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; font-family: inherit; font-size: 14px; box-sizing: border-box;\" />\n                    <input type=\"email\" placeholder=\"Email\" style=\"width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; font-family: inherit; font-size: 14px; box-sizing: border-box;\" />\n                    <input type=\"tel\" placeholder=\"Teléfono\" style=\"width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; font-family: inherit; font-size: 14px; box-sizing: border-box;\" />\n                    <textarea placeholder=\"Hola! Quiero que se comuniquen conmigo...\" style=\"width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical; min-height: 100px;\"></textarea>\n                    \n                    <button style=\"width: 100%; padding: 14px; background-color: #ff5a5f; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;\">Contactar</button>\n                    <button style=\"width: 100%; padding: 14px; background-color: #25d366; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 12px;\">WhatsApp</button>\n                </div>\n            </div>\n        </div>\n    </div>\n    "
+  }
+}
