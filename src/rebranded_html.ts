@@ -123,6 +123,14 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
             </div>
 
             ${amenitiesHtml}
+
+            <div class="h-px bg-zinc-200 my-8"></div>
+            <h3 class="text-xl font-bold text-zinc-900 mb-4 mt-8">Ubicación de la Propiedad</h3>
+            <div class="rounded-xl overflow-hidden border border-zinc-200 shadow-sm">
+                <iframe width="100%" height="300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+                src="https://maps.google.com/maps?q=${encodeURIComponent(location + ', Capital Federal, Argentina')}&t=&z=15&ie=UTF8&iwloc=&output=embed">
+                </iframe>
+            </div>
         </div>
     </div>
 

@@ -33,14 +33,19 @@ fastify.post('/api/scrape', async (request, reply) => {
 fastify.post('/api/search', async (request, reply) => {
   try {
     const body = request.body as any;
-    if (!body || !body.url) {
-      return reply.code(400).send({ success: false, error: 'Se requiere una URL en el body ({"url": "..."}).' });
+    if (!body) {
+      return reply.code(400).send({ success: false, error: 'Cuerpo de la petición vacío.' });
     }
 
-    const { url } = body;
+    // Check if it's a raw URL or filters
+    if (!body.url && !body.tipo && !body.barrio) {
+      return reply.code(400).send({ success: false, error: 'Debe proveer una "url" o filtros como "tipo", "operacion", "barrio".' });
+    }
 
-    fastify.log.info(`Iniciando busqueda en: ${url}`);
-    const result = await searchZonaprop(url);
+    const searchPayload = body.url ? body.url : body;
+
+    fastify.log.info(`Iniciando busqueda con payload: ${JSON.stringify(searchPayload)}`);
+    const result = await searchZonaprop(searchPayload);
 
     return reply.send({ success: true, data: result });
   } catch (error: any) {

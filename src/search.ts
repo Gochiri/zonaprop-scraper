@@ -15,9 +15,55 @@ export interface SearchResult {
   image: string;
   link: string;
   zonapropId?: string; // Cód de la propiedad
+  rebrandedUrl?: string; // URL local para GHL
 }
 
-export async function searchZonaprop(url: string, limit: number = 10): Promise<{ properties: SearchResult[], html: string }> {
+export interface SearchFilters {
+  tipo?: string; // e.g., 'departamentos', 'casas', 'ph'
+  operacion?: string; // e.g., 'alquiler', 'venta'
+  barrio?: string; // e.g., 'palermo', 'belgrano'
+  ambientes?: string; // e.g., '3-ambientes', 'mas-de-2-ambientes'
+  precioMin?: string;
+  precioMax?: string;
+  moneda?: string; // 'usd', 'pesos' (zonaprop usually uses 'q' for pesos or just omits it, but usually 'usd')
+}
+
+export function buildZonapropUrl(filters: SearchFilters): string {
+  // Base parts
+  const tipo = filters.tipo || 'inmuebles';
+  const operacion = filters.operacion || ''; // sometimes left empty for all operations
+  const barrio = filters.barrio || 'capital-federal'; // default to CABA
+
+  let parts = [tipo];
+  if (operacion) parts.push(operacion);
+  parts.push(barrio);
+
+  // Optional parts
+  if (filters.ambientes) parts.push(filters.ambientes);
+
+  // Price parts
+  if (filters.precioMin || filters.precioMax) {
+    if (filters.precioMin && filters.precioMax) {
+      parts.push(`${filters.precioMin}-${filters.precioMax}`);
+    } else if (filters.precioMin) {
+      parts.push(`mas-de-${filters.precioMin}`);
+    } else if (filters.precioMax) {
+      parts.push(`hasta-${filters.precioMax}`);
+    }
+
+    if (filters.moneda) {
+      parts.push(filters.moneda);
+    }
+  }
+
+  // Final join
+  const path = parts.filter(Boolean).join('-');
+  return `https://www.zonaprop.com.ar/${path}.html`;
+}
+
+export async function searchZonaprop(urlOrFilters: string | SearchFilters, limit: number = 10): Promise<{ properties: SearchResult[], html: string }> {
+  const url = typeof urlOrFilters === 'string' ? urlOrFilters : buildZonapropUrl(urlOrFilters);
+
   const browser = await chromium.launch({
     headless: true,
     args: [
@@ -119,6 +165,9 @@ export async function searchZonaprop(url: string, limit: number = 10): Promise<{
           zonapropId = idMatch[1];
         }
 
+        const publicDomain = process.env.PUBLIC_URL || 'http://localhost:3000';
+        const rebrandedUrl = zonapropId ? `${publicDomain}/vista/${zonapropId}?url=${encodeURIComponent(link || '')}` : '';
+
         properties.push({
           title: titleMatch,
           price,
@@ -127,7 +176,8 @@ export async function searchZonaprop(url: string, limit: number = 10): Promise<{
           features,
           location: location || '',
           description: description || '',
-          zonapropId
+          zonapropId,
+          rebrandedUrl
         });
       }
     }
