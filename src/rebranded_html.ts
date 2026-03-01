@@ -1,3 +1,14 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+let cachedLogoStr = '';
+try {
+    const logoPath = path.join(process.cwd(), 'assets', 'JUEJATI naranja (1).png');
+    cachedLogoStr = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+} catch (e) {
+    console.error('Warning: Error caching logo', e);
+}
+
 export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: string): string {
     const images = propertyData.images || [];
     // Primera imagen destacada grande
@@ -10,13 +21,23 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     const title = propertyData.title || propertyData.location || 'Propiedad Exclusiva';
     const location = propertyData.location || title;
     const price = propertyData.price || 'Consultar Precio';
-    const expenses = propertyData.expenses ? `<div class="expenses">+ ${propertyData.expenses}</div>` : '';
+
+    let expRaw = propertyData.expenses || '';
+    expRaw = expRaw.replace(/^\+?\s*/, '').replace(/^Expensas\s*/i, '').trim();
+    const expenses = expRaw ? `+ Expensas ${expRaw}` : '';
+
     const description = propertyData.description || 'Consulta para más información sobre esta propiedad.';
 
-    let cleanDescription = description
-        .replace(/Corredor Responsable:.*?\./gi, '')
-        .replace(/Contacto:.*?\./gi, '')
-        .replace(/Matricula .*?\./gi, '')
+    let cleanDescription = description;
+    // Buscamos cualquier palabra clave de inmobiliaria o legal y cortamos el texto ahí
+    const keywordsRegex = /(Corredor|cucicba|cmcpsi|Matr[ií]cula|La tasaci[oó]n|Para los casos de alquiler|Se encuentra prohibido|Aviso legal|Nota:|Martillero|Keller Williams|RE\/MAX|Remax|Century 21|Coldwell Banker|Tasaciones)/i;
+    const match = cleanDescription.match(keywordsRegex);
+    if (match && match.index !== undefined) {
+        cleanDescription = cleanDescription.substring(0, match.index).trim();
+    }
+
+    cleanDescription = cleanDescription
+        .replace(/Contacto:.*?(?=\n|$)/gi, '')
         .replace(/Leer descripci[óo]n completa/gi, '');
 
     const wpPhone = process.env.AGENCY_WHATSAPP || '5491100000000';
@@ -29,8 +50,8 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
         if (f.includes('m² tot') || f.includes('m²')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 4h16v16H4z"></path><path d="M4 12h16"></path><path d="M12 4v16"></path></svg>`;
         if (f.includes('cub')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path></svg>`;
         if (f.includes('amb')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 4h16v16H4z"></path><path d="M9 4v16"></path><path d="M15 4v16"></path></svg>`;
-        if (f.includes('baño') || f.includes('toilette')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M7 21a4 4 0 0 1-4-4v-1a2 0 0 1 2-2h14a2 0 0 1 2 2v1a4 0 0 1-4 4H7z"></path><path d="M7 14V8a5 5 0 0 1 10 0v6"></path><path d="M10 5V3"></path><path d="M14 5V3"></path></svg>`;
-        if (f.includes('coch') || f.includes('estacionamiento')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 16H9m10 0h3v-3.15a1 0 0 0-.84-.99L16 11l-2.7-3.6a2 0 0 0-1.6-.8H9.3a2 0 0 0-1.6.8L5 11l-5.16.86a1 0 0 0-.84.99V16h3m14 0a2 0 1 1-4 0 2 0 0 1 4 0zM7 16a2 0 1 1-4 0 2 0 0 1 4 0z"></path></svg>`;
+        if (f.includes('baño') || f.includes('toilette')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M7 21a4 4 0 0 1-4-4v-1a2 0 0 1 2-2h14a2 0 0 1 2 2v1a4 4 0 0 1-4 4H7z"></path><path d="M7 14V8a5 5 0 0 1 10 0v6"></path><path d="M10 5V3"></path><path d="M14 5V3"></path></svg>`;
+        if (f.includes('coch') || f.includes('estacionamiento')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a2 2 0 00-1.6-.8H9.3a2 0 00-1.6.8L5 11l-5.16.86a1 1 0 00-.84.99V16h3m14 0a2 2 0 11-4 0 2 0 014 0zM7 16a2 2 0 11-4 0 2 0 014 0z"></path></svg>`;
         if (f.includes('dorm')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 7v10M21 7v10M6 14h12M3 17h18M6 10h.01M18 10h.01M9 10h6"></path><rect x="5" y="7" width="14" height="10" rx="2" ry="2"></rect></svg>`;
         if (f.includes('año') || f.includes('antig')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
         if (f.includes('luminoso')) return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
@@ -55,15 +76,7 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     </ul>
   ` : '';
 
-    let logoBase64 = '';
-    try {
-        const fs = require('fs');
-        const path = require('path');
-        const logoPath = path.join(process.cwd(), 'assets', 'JUEJATI naranja (1).png');
-        logoBase64 = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
-    } catch (e) {
-        console.error('Logo not found', e);
-    }
+    let logoBase64 = cachedLogoStr;
 
     return `
 <!DOCTYPE html>
@@ -107,7 +120,7 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
             
             <div class="flex items-baseline gap-4 mb-2">
                 <div class="text-3xl md:text-4xl font-extrabold text-zinc-900 leading-none">${price}</div>
-                ${expenses ? `<div class="text-base text-zinc-500 font-medium">+ ${expenses}</div>` : ''}
+                ${expenses ? `<div class="text-base text-zinc-500 font-medium">${expenses}</div>` : ''}
             </div>
             
             <div class="text-lg md:text-xl font-medium text-zinc-500 mb-8">${location}</div>
