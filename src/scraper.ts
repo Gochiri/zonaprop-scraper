@@ -26,20 +26,46 @@ export async function scrapeZonaprop(url: string) {
     let context: BrowserContext | null = null;
     let page = null;
 
+    const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0',
+    ];
+    const randomUA: string = userAgents[Math.floor(Math.random() * userAgents.length)] as string;
+
     try {
         const browser = await getBrowser();
         context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            userAgent: randomUA,
             viewport: { width: 1920, height: 1080 },
             locale: 'es-AR',
-            timezoneId: 'America/Argentina/Buenos_Aires'
+            timezoneId: 'America/Argentina/Buenos_Aires',
+            extraHTTPHeaders: {
+                'Accept-Language': 'es-AR,es;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1',
+            }
         });
 
-        // Anti evasiones
+        // Anti evasiones reforzadas
         await context.addInitScript(() => {
-            Object.defineProperty(navigator, 'webdriver', {
-                get: () => undefined,
-            });
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+            Object.defineProperty(navigator, 'languages', { get: () => ['es-AR', 'es', 'en'] });
+            (window as any).chrome = { runtime: {} };
+            const originalQuery = (window as any).navigator.permissions?.query;
+            if (originalQuery) {
+                (window as any).navigator.permissions.query = (parameters: any) =>
+                    parameters.name === 'notifications'
+                        ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+                        : originalQuery(parameters);
+            }
         });
 
         page = await context.newPage();
@@ -58,7 +84,22 @@ export async function scrapeZonaprop(url: string) {
             route.continue();
         });
 
-        const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        // Retry logic por si Zonaprop bloquea la primera vez
+        let response = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            if (attempt > 1) {
+                const delay = 3000 + Math.random() * 5000;
+                console.log(`[scraper] Reintento ${attempt}/3 después de ${Math.round(delay)}ms...`);
+                await page.waitForTimeout(delay);
+            }
+            response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+            if (response && response.status() === 200) break;
+            if (response && response.status() === 403 && attempt < 3) {
+                console.log(`[scraper] 403 detectado en intento ${attempt}, reintentando...`);
+                continue;
+            }
+        }
 
         if (!response || response.status() === 403 || response.status() === 429 || response.status() >= 500) {
             throw new Error(`Bloqueo Anti-Bot o Error de Servidor. Status HTTP: ${response ? response.status() : 'Unknown'}`);
