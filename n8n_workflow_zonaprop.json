@@ -1,0 +1,157 @@
+{
+    "name": "Zonaprop Scraper → GHL Pipeline",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "zonaprop-search",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-trigger",
+            "name": "Webhook Trigger",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "zonaprop-search"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://devportainer.korvance.com:3000/api/search",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({ filters: { operacion: $json.body.operacion || 'alquiler', tipo: $json.body.tipo || 'departamentos', barrio: $json.body.barrio || '', ambientes: $json.body.ambientes || '', precioMin: $json.body.precioMin || '', precioMax: $json.body.precioMax || '', moneda: $json.body.moneda || 'pesos' } }) }}",
+                "options": {
+                    "timeout": 120000,
+                    "response": {
+                        "response": {
+                            "fullResponse": false
+                        }
+                    }
+                }
+            },
+            "id": "http-scraper",
+            "name": "Buscar en Zonaprop",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extraer las propiedades del resultado del scraper\nconst response = $input.first().json;\n\nif (!response.success || !response.data || !response.data.properties) {\n  throw new Error('El scraper no devolvió resultados válidos');\n}\n\nconst properties = response.data.properties;\n\n// Crear un resumen para GHL\nconst summary = properties.map((p, i) => {\n  return `🏠 ${i+1}. ${p.title}\\n💰 ${p.price}\\n📍 ${p.location}\\n🔗 ${p.rebrandedUrl}\\n`;\n}).join('\\n');\n\n// Devolver cada propiedad como item individual + el resumen\nreturn [{\n  json: {\n    totalProperties: properties.length,\n    summary: summary,\n    properties: properties,\n    firstPropertyUrl: properties[0]?.rebrandedUrl || '',\n    searchUrl: response.data.searchUrl || ''\n  }\n}];"
+            },
+            "id": "code-format",
+            "name": "Formatear Resultados",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                750,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "PUT",
+                "url": "=https://services.leadconnectorhq.com/contacts/{{$json.body.contactId}}",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({ customFields: [ { id: '7IJuuuiPZZsoJ3CogBZ8', field_value: $('Formatear Resultados').item.json.summary }, { id: 'XXEy7AlJmE9PJu1bOQKs', field_value: $('Formatear Resultados').item.json.firstPropertyUrl } ] }) }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "fullResponse": false
+                        }
+                    }
+                }
+            },
+            "id": "ghl-update",
+            "name": "Actualizar GHL Opportunity",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1000,
+                200
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "TU_CREDENTIAL_ID",
+                    "name": "GHL API Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify({ success: true, message: 'Pipeline ejecutado correctamente', totalProperties: $('Formatear Resultados').item.json.totalProperties, summary: $('Formatear Resultados').item.json.summary }) }}"
+            },
+            "id": "respond-webhook",
+            "name": "Responder Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                1000,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Buscar en Zonaprop",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Buscar en Zonaprop": {
+            "main": [
+                [
+                    {
+                        "node": "Formatear Resultados",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Formatear Resultados": {
+            "main": [
+                [
+                    {
+                        "node": "Actualizar GHL Opportunity",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Responder Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "tags": [
+        {
+            "name": "zonaprop"
+        },
+        {
+            "name": "ghl"
+        }
+    ]
+}

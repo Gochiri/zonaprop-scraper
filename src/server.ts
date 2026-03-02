@@ -37,12 +37,14 @@ fastify.post('/api/search', async (request, reply) => {
       return reply.code(400).send({ success: false, error: 'Cuerpo de la petición vacío.' });
     }
 
-    // Check if it's a raw URL or filters
-    if (!body.url && !body.tipo && !body.barrio) {
+    // Accept both { filters: {...} } and flat { tipo, barrio, ... } formats
+    const filters = body.filters || body;
+
+    if (!body.url && !filters.tipo && !filters.barrio && !filters.operacion) {
       return reply.code(400).send({ success: false, error: 'Debe proveer una "url" o filtros como "tipo", "operacion", "barrio".' });
     }
 
-    const searchPayload = body.url ? body.url : body;
+    const searchPayload = body.url ? body.url : filters;
 
     fastify.log.info(`Iniciando busqueda con payload: ${JSON.stringify(searchPayload)}`);
     const result = await searchZonaprop(searchPayload);
