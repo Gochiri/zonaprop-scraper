@@ -7,8 +7,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copiar código fuente
+# Copiar código fuente y assets
 COPY src/ ./src/
+COPY assets/ ./assets/
 COPY tsconfig.json ./
 
 EXPOSE 3000
