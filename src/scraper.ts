@@ -238,23 +238,23 @@ export async function scrapeZonaprop(url: string) {
         if (schemaData) {
             if (schemaData.address) {
                 const addr = schemaData.address;
+                // Helper to clean Zonaprop street format: "Calle al 2800" → "Calle 2800"
+                const cleanStreet = (s: string) => s
+                    .replace(/\bal\s+(\d)/gi, '$1')   // "al 2800" → "2800"
+                    .replace(/\bC(\d{4})\b/g, '$1')    // "C2800" → "2800"
+                    .replace(/\s+/g, ' ').trim();
+
                 if (typeof addr === 'string') {
                     propertyData.location = addr;
                 } else {
-                    // Build the most complete address possible for Google Maps
-                    const parts = [
-                        addr.streetAddress,
-                        addr.addressLocality,
-                        addr.addressRegion,
-                    ].filter(Boolean);
-                    propertyData.location = parts.join(', ');
-                    // Keep a full address specifically for the map embed
-                    propertyData.fullAddress = [
-                        addr.streetAddress,
-                        addr.addressLocality,
-                        addr.addressRegion || 'Buenos Aires',
-                        'Argentina'
-                    ].filter(Boolean).join(', ');
+                    const street = cleanStreet(addr.streetAddress || '');
+                    const locality = addr.addressLocality || '';
+                    const region = (addr.addressRegion || 'Buenos Aires')
+                        .replace(/Ciudad Autónoma de Buenos Aires/i, 'CABA')
+                        .replace(/Capital Federal/i, 'CABA');
+
+                    propertyData.location = [street, locality, region].filter(Boolean).join(', ');
+                    propertyData.fullAddress = [street, locality, region, 'Argentina'].filter(Boolean).join(', ');
                 }
             }
             if (!price && schemaData.offers && schemaData.offers.price) {
