@@ -237,9 +237,25 @@ export async function scrapeZonaprop(url: string) {
 
         if (schemaData) {
             if (schemaData.address) {
-                propertyData.location = typeof schemaData.address === 'string'
-                    ? schemaData.address
-                    : schemaData.address.streetAddress;
+                const addr = schemaData.address;
+                if (typeof addr === 'string') {
+                    propertyData.location = addr;
+                } else {
+                    // Build the most complete address possible for Google Maps
+                    const parts = [
+                        addr.streetAddress,
+                        addr.addressLocality,
+                        addr.addressRegion,
+                    ].filter(Boolean);
+                    propertyData.location = parts.join(', ');
+                    // Keep a full address specifically for the map embed
+                    propertyData.fullAddress = [
+                        addr.streetAddress,
+                        addr.addressLocality,
+                        addr.addressRegion || 'Buenos Aires',
+                        'Argentina'
+                    ].filter(Boolean).join(', ');
+                }
             }
             if (!price && schemaData.offers && schemaData.offers.price) {
                 propertyData.price = `${schemaData.offers.priceCurrency || 'USD'} ${parseInt(schemaData.offers.price).toLocaleString('es-AR')}`;
