@@ -3,13 +3,26 @@ version: '3.8'
 services:
   zonaprop-scraper:
     build: .
-    container_name: zonaprop-scraper
-    restart: always
-    ports:
-      - "3000:3000"
+    image: ghcr.io/gochiri/zonaprop-scraper:latest
     environment:
-      - PUBLIC_URL=http://tu-ip-o-dominio:3000
+      - PUBLIC_URL=https://api-zonaprop.korvance.com
       - AGENCY_WHATSAPP=+5491112345678
       - NODE_ENV=production
-    # shm_size is important for Playwright to avoid crashing when grabbing complex pages
     shm_size: '1gb'
+    networks:
+      - korvancenet
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        # Cambia 'api-zonaprop.korvance.com' por el subdominio que prefieras
+        - "traefik.http.routers.zonascraper.rule=Host(`api-zonaprop.korvance.com`)"
+        - "traefik.http.routers.zonascraper.entrypoints=websecure"
+        - "traefik.http.routers.zonascraper.tls=true"
+        - "traefik.http.routers.zonascraper.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.zonascraper.loadbalancer.server.port=3000"
+        - "traefik.docker.network=korvancenet"
+
+networks:
+  korvancenet:
+    external: true
