@@ -5,7 +5,7 @@ services:
     build: .
     image: ghcr.io/gochiri/zonaprop-scraper:latest
     environment:
-      - PUBLIC_URL=https://api-zonaprop.korvance.com
+      - PUBLIC_URL=https://catalogo.korvance.com
       - AGENCY_WHATSAPP=+5491112345678
       - NODE_ENV=production
     shm_size: '1gb'
@@ -15,8 +15,8 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        # Cambia 'api-zonaprop.korvance.com' por el subdominio que prefieras
-        - "traefik.http.routers.zonascraper.rule=Host(`api-zonaprop.korvance.com`)"
+        # Subdominio genérico modificado:
+        - "traefik.http.routers.zonascraper.rule=Host(`catalogo.korvance.com`)"
         - "traefik.http.routers.zonascraper.entrypoints=websecure"
         - "traefik.http.routers.zonascraper.tls=true"
         - "traefik.http.routers.zonascraper.tls.certresolver=letsencryptresolver"
