@@ -95,7 +95,13 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     
     <!-- Header -->
     <header class="bg-white px-6 py-4 border-b border-zinc-200 flex justify-between items-center sticky top-0 z-50">
-        ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="h-8 object-contain">` : `<div class="font-extrabold text-xl text-zinc-900 tracking-tight">Catálogo Exclusivo</div>`}
+        <div class="flex items-center gap-4">
+            <button onclick="window.history.back()" class="text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1 text-sm font-medium pr-4 border-r border-zinc-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                Volver
+            </button>
+            ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="h-8 object-contain">` : `<div class="font-extrabold text-xl text-zinc-900 tracking-tight">Propiedades Seleccionadas</div>`}
+        </div>
         <div class="text-sm text-zinc-500 font-semibold px-3 py-1.5 bg-zinc-100 rounded-xl">
             Cód: ${zonapropId}
         </div>

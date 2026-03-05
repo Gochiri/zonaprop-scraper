@@ -1,0 +1,220 @@
+{
+  "name": "sub: Buscar Propiedades",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query_id"
+            },
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -736,
+        1520
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ════════════════════════════════════════════════════════\n// EXTRAER FILTROS DEL QUERY ESTRUCTURADO\n// ════════════════════════════════════════════════════════\n\nconst query = $json.original_query || '';\nconst searchQuery = $json.search_query || '';\nconst queryType = $json.query_type || '';\nconst queryId = $json.query_id || '';\n\n// Parsear filtros del query estructurado\nconst filters = {};\nif (query.includes(';')) {\n  query.split(';').forEach(pair => {\n    const [key, value] = pair.split(':');\n    if (key && value) filters[key.trim()] = value.trim();\n  });\n}\n\n// Construir objeto de filtros limpios\nconst cleanFilters = {\n  ambientes: filters.ambientes ? parseInt(filters.ambientes) : null,\n  precio_max: (filters.precio_max && filters.precio_max !== '9999999') ? parseInt(filters.precio_max) : null,\n  precio_min: (filters.precio_min && filters.precio_min !== '0') ? parseInt(filters.precio_min) : null,\n  zona: filters.zona || null,\n  operacion: filters.operacion || null,\n  tipo: filters.tipo || null,\n  moneda: filters.moneda || null\n};\n\n// Log para debug\nconsole.log('═══════════════════════════════════════');\nconsole.log('📋 FILTROS EXTRAÍDOS:');\nconsole.log(JSON.stringify(cleanFilters, null, 2));\nconsole.log('═══════════════════════════════════════');\n\nreturn [{\n  json: {\n    query_id: queryId,\n    search_query: searchQuery,\n    query_type: queryType,\n    filters: cleanFilters,\n    // Filtros individuales para fácil acceso en expresiones\n    filter_ambientes: cleanFilters.ambientes,\n    filter_precio_max: cleanFilters.precio_max,\n    filter_zona: cleanFilters.zona,\n    filter_operacion: cleanFilters.operacion,\n    filter_tipo: cleanFilters.tipo\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        1520
+      ],
+      "id": "8e04bc24-035e-4379-8f1c-c403b881dd32",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ════════════════════════════════════════════════════════\n// DETECTAR TIPO DE QUERY Y PREPARAR BÚSQUEDA\n// ════════════════════════════════════════════════════════\n\nconst query = $json.query || '';\nconst queryId = $json.query_id || '';\n\nconsole.log('═══════════════════════════════════════');\nconsole.log('📝 QUERY RECEIVED:', query);\nconsole.log('📝 QUERY ID:', queryId);\n\n// ─── DETECTAR TIPO DE QUERY ───\nconst isStructuredQuery = query.includes(':') && query.includes(';');\n\nlet searchQuery = '';\nlet queryType = '';\n\nif (isStructuredQuery) {\n  // ════════════════════════════════════════════════════════\n  // TIPO A: QUERY ESTRUCTURADO (actual)\n  // ════════════════════════════════════════════════════════\n  queryType = 'structured';\n  \n  // Parsear query estructurado\n  const params = {};\n  query.split(';').forEach(pair => {\n    const [key, value] = pair.split(':');\n    if (key && value) params[key] = value;\n  });\n  \n  console.log('Query Type: STRUCTURED');\n  console.log('Parsed params:', JSON.stringify(params, null, 2));\n  \n  // Construir query de texto para búsqueda vectorial\n  const parts = [];\n  \n  if (params.tipo) parts.push(params.tipo);\n  if (params.ambientes) parts.push(`${params.ambientes} ambientes`);\n  if (params.zona) parts.push(`en ${params.zona}`);\n  if (params.operacion) parts.push(params.operacion);\n  if (params.moneda && params.precio_max) {\n    if (params.precio_max !== '9999999') {\n      parts.push(`hasta ${params.moneda} ${params.precio_max}`);\n    }\n  }\n  if (params.caracteristicas) parts.push(params.caracteristicas);\n  \n  searchQuery = parts.join(' ');\n  \n} else {\n  // ════════════════════════════════════════════════════════\n  // TIPO B: QUERY DE TEXTO LIBRE (nuevo)\n  // ════════════════════════════════════════════════════════\n  queryType = 'freetext';\n  searchQuery = query;\n  \n  console.log('Query Type: FREE TEXT');\n}\n\nconsole.log('Search Query:', searchQuery);\nconsole.log('═══════════════════════════════════════');\n\nreturn [{\n  json: {\n    query_id: queryId,\n    original_query: query,\n    search_query: searchQuery,\n    query_type: queryType\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        1520
+      ],
+      "id": "5f3e21d4-e7d1-4edc-95bc-9b4900137361",
+      "name": "Parse Query Type2"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "tableName": {
+          "__rl": true,
+          "value": "propiedades_vector",
+          "mode": "list",
+          "cachedResultName": "propiedades_vector"
+        },
+        "prompt": "={{ $json.search_query }}",
+        "topK": 10,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        1504
+      ],
+      "id": "404976ae-039a-40fc-9950-e6b9b26ca485",
+      "name": "Supabase Vector Store3",
+      "credentials": {
+        "supabaseApi": {
+          "id": "bk4locPgOPTFFISB",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        1792
+      ],
+      "id": "034292c5-ccb6-4a04-8409-0d3885846508",
+      "name": "Embeddings OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "NIG7Ypuh5LuKtomK",
+          "name": "OpenAi Juejati"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1792
+      ],
+      "id": "87aa1587-9e20-49ee-a452-8b89ed03f54e",
+      "name": "Reranker Cohere3",
+      "credentials": {
+        "cohereApi": {
+          "id": "n1h2mE2hA3BN1in8",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ════════════════════════════════════════════════════════\n// FILTRAR RESULTADOS (VERSIÓN MEJORADA - MÁS FLEXIBLE)\n// ════════════════════════════════════════════════════════\n// ✅ MEJORAS:\n// - Filtro de ambientes con rango ±1\n// - Filtro de operación con búsqueda parcial (includes)\n// - Mejor manejo de propiedades sin precio\n// ════════════════════════════════════════════════════════\n\nconst results = $input.all();\n\n// Obtener filtros del nodo anterior\nconst prevData = $('Code in JavaScript1').first().json;\nconst filters = prevData.filters;\n\nconsole.log('═══════════════════════════════════════');\nconsole.log('📋 Filtros a aplicar:', JSON.stringify(filters));\nconsole.log('📊 Resultados de Supabase:', results.length);\n\nconst filtered = results.filter(item => {\n  const meta = item.json.document?.metadata?.metadata || {};\n\n  // ✅ FILTRO POR AMBIENTES ESTRICTO\n  if (filters.ambientes !== null) {\n    const propAmbientes = meta.ambientes || 0;\n    const filterAmbientes = filters.ambientes;\n\n    if (propAmbientes !== filterAmbientes) {\n      console.log(`❌ Excluido: ${meta.tokko_id} - ambientes ${propAmbientes} !== ${filterAmbientes}`);\n      return false;\n    }\n  }\n\n  // Filtro por precio mínimo (solo si la propiedad tiene precio)\n  if (filters.precio_min !== null && meta.precio !== null && meta.precio < filters.precio_min) {\n    console.log(`❌ Excluido: ${meta.tokko_id} - precio ${meta.precio} < ${filters.precio_min}`);\n    return false;\n  }\n\n  // Filtro por precio máximo (solo si la propiedad tiene precio)\n  if (filters.precio_max !== null && meta.precio !== null && meta.precio > filters.precio_max) {\n    console.log(`❌ Excluido: ${meta.tokko_id} - precio ${meta.precio} > ${filters.precio_max}`);\n    return false;\n  }\n\n  // Filtro por zona (búsqueda flexible - includes)\n  if (filters.zona !== null) {\n    const propZona = (meta.zona || meta.barrio || meta.distrito || '').toLowerCase();\n    const filterZona = filters.zona.toLowerCase();\n\n    if (!propZona.includes(filterZona)) {\n      console.log(`❌ Excluido: ${meta.tokko_id} - zona \"${propZona}\" no incluye \"${filterZona}\"`);\n      return false;\n    }\n  }\n\n  // ✅ MEJORA: Filtro por operación CON BÚSQUEDA PARCIAL (includes)\n  if (filters.operacion !== null) {\n    const propOperacion = (meta.operacion || '').toLowerCase();\n    const filterOperacion = filters.operacion.toLowerCase();\n\n    // Usar includes en lugar de === para soportar \"alquiler, alquiler temporario\"\n    if (!propOperacion.includes(filterOperacion)) {\n      console.log(`❌ Excluido: ${meta.tokko_id} - operacion \"${propOperacion}\" no incluye \"${filterOperacion}\"`);\n      return false;\n    }\n  }\n\n  // Filtro por tipo de propiedad\n  if (filters.tipo !== null) {\n    const propTipo = (meta.tipo_propiedad || meta.tipo_inmueble || '').toLowerCase();\n    const filterTipo = filters.tipo.toLowerCase();\n\n    if (!propTipo.includes(filterTipo)) {\n      console.log(`❌ Excluido: ${meta.tokko_id} - tipo \"${propTipo}\" no incluye \"${filterTipo}\"`);\n      return false;\n    }\n  }\n\n  console.log(`✅ Incluido: ${meta.tokko_id} - ${meta.titulo}`);\n  return true;\n});\n\nconsole.log(`📊 Resultado: ${results.length} → ${filtered.length}`);\nconsole.log('═══════════════════════════════════════');\n\n// Score mínimo (más bajo para permitir más resultados)\nconst MIN_SCORE = 0.4;  \nconst highQualityResults = filtered.filter(item => {\n  const score = item.json.score || 0;\n  if (score < MIN_SCORE) {\n    console.log(`⚠️ Baja relevancia: ${item.json.document?.metadata?.metadata?.tokko_id} - score ${score}`);\n    return false;\n  }\n  return true;\n});\n\n// Si no hay resultados de alta calidad, incluir todos los filtrados\nconst finalResults = highQualityResults.length > 0 ? highQualityResults : filtered;\n\nconst propiedades = finalResults.map(item => {\n  const meta = item.json.document?.metadata?.metadata || {};\n  return {\n    tokko_id: meta.tokko_id,\n    titulo: meta.titulo,\n    direccion: meta.direccion,\n    barrio: meta.barrio || meta.zona,\n    precio: meta.precio,\n    moneda: meta.moneda,\n    ambientes: meta.ambientes,\n    dormitorios: meta.dormitorios,\n    banos: meta.banos,\n    cocheras: meta.cocheras,\n    imagen: meta.imagen,\n    link_web: meta.link_web,\n    asesor: meta.asesor,\n    score: item.json.score\n  };\n});\n\nreturn [{\n  json: {\n    success: propiedades.length > 0,\n    total: propiedades.length,\n    propiedades: propiedades,\n    debug: {\n      results_before_filter: results.length,\n      results_after_filter: filtered.length,\n      results_after_score_filter: finalResults.length,\n      filters_applied: filters,\n      min_score: MIN_SCORE\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        1504
+      ],
+      "id": "f1373269-c494-4537-97b4-b70870944afc",
+      "name": "filtro2"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query_id": "3ReVhZ7EEpJFHEhsmEs1",
+          "query": "zona:palermo;tipo:departamento;ambientes:4;moneda:USD;precio_min:0;precio_max:9999999;operacion:venta;caracteristicas:cerca de libertador"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse Query Type2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Query Type2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store3": {
+      "main": [
+        [
+          {
+            "node": "filtro2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere3": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "594553ac-8cbc-4b8f-8401-97f328681d32",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b2372f2635dd70951ede88a3062b4f50e8510b33f9ee8dc8789ff1da1d702e4"
+  },
+  "id": "WTHzGoaGFU4xRQY3",
+  "tags": []
+}

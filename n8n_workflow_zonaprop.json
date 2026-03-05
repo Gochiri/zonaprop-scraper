@@ -1,22 +1,24 @@
 {
-    "name": "Zonaprop Scraper → GHL Pipeline",
+    "name": "Zonaprop Scraper → GHL (Opción B: Mensaje Asíncrono)",
     "nodes": [
         {
             "parameters": {
                 "httpMethod": "POST",
                 "path": "zonaprop-search",
-                "responseMode": "responseNode",
+                "responseMode": "lastNode",
                 "options": {}
             },
             "id": "webhook-trigger",
-            "name": "Webhook Trigger",
+            "name": "Webhook Trigger (Desde GHL)",
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2,
             "position": [
                 250,
                 300
             ],
-            "webhookId": "zonaprop-search"
+            "webhookId": "zonaprop-search",
+            "notesInFlow": true,
+            "notes": "GHL envía a este webhook los filtros requeridos (operacion, tipo, barrio, etc) junto con el contactId y phone del Lead."
         },
         {
             "parameters": {
@@ -24,7 +26,7 @@
                 "url": "http://devportainer.korvance.com:3000/api/search",
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ JSON.stringify({ filters: { operacion: $json.body.operacion || 'alquiler', tipo: $json.body.tipo || 'departamentos', barrio: $json.body.barrio || '', ambientes: $json.body.ambientes || '', precioMin: $json.body.precioMin || '', precioMax: $json.body.precioMax || '', moneda: $json.body.moneda || 'pesos' } }) }}",
+                "jsonBody": "={{ JSON.stringify({ filters: { operacion: $json.body.operacion || 'venta', tipo: $json.body.tipo || 'departamentos', barrio: $json.body.barrio || 'palermo', ambientes: $json.body.ambientes || '', precioMin: $json.body.precioMin || '', precioMax: $json.body.precioMax || '', moneda: $json.body.moneda || 'dolares' } }) }}",
                 "options": {
                     "timeout": 120000,
                     "response": {
@@ -35,107 +37,102 @@
                 }
             },
             "id": "http-scraper",
-            "name": "Buscar en Zonaprop",
+            "name": "Buscar en Zonaprop (Scraper VPS)",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
                 500,
                 300
-            ]
+            ],
+            "notesInFlow": true,
+            "notes": "Llama a la API local de Node.js donde configuramos Playwright para descargar las propiedades en tiempo real."
         },
         {
             "parameters": {
-                "jsCode": "// Extraer las propiedades del resultado del scraper\nconst response = $input.first().json;\n\nif (!response.success || !response.data || !response.data.properties) {\n  throw new Error('El scraper no devolvió resultados válidos');\n}\n\nconst properties = response.data.properties;\n\n// Crear un resumen para GHL\nconst summary = properties.map((p, i) => {\n  return `🏠 ${i+1}. ${p.title}\\n💰 ${p.price}\\n📍 ${p.location}\\n🔗 ${p.rebrandedUrl}\\n`;\n}).join('\\n');\n\n// Devolver cada propiedad como item individual + el resumen\nreturn [{\n  json: {\n    totalProperties: properties.length,\n    summary: summary,\n    properties: properties,\n    firstPropertyUrl: properties[0]?.rebrandedUrl || '',\n    searchUrl: response.data.searchUrl || ''\n  }\n}];"
+                "jsCode": "// Extraer propiedades de la respuesta del scraper\nconst response = $input.first().json;\nconst webhookData = $('Webhook Trigger (Desde GHL)').item.json.body || {};\n\nif (!response.success || !response.data || !response.data.properties || response.data.properties.length === 0) {\n  return [{\n    json: {\n      hasResults: false,\n      contactId: webhookData.contactId || '',\n      whatsappMessage: 'Hola, recién terminé de escanear el mercado entero y por el momento no encontré opciones que coincidan 100% con tu pedido. 😔 Seguiré en contacto si ingresa algo nuevo.'\n    }\n  }];\n}\n\nconst properties = response.data.properties;\n\n// Armar un resumen corto. GHL permite mensajes que no sean demasiado inmensos.\nlet resumenPropiedades = '';\nfor (let i = 0; i < Math.min(3, properties.length); i++) {\n  resumenPropiedades += `\\n🔹 *${properties[i].title}*\\n💰 ${properties[i].price}\\n📍 ${properties[i].location}\\n🔗 Ver Ficha: ${properties[i].rebrandedUrl}\\n`;\n}\n\n// El enlace general para ver todo el listado, podemos armarlo en base a los datos:\n// ej. \"http://devportainer.korvance.com:3000/busqueda?barrio=palermo&operacion=venta...\"\n// Pero el scraper ya devuelve el enlace real original. \n// Si creaste un enlace en tu API (ej: response.data.searchUrl), puedes usarlo aquí.\nconst urlListadoDinamico = `http://devportainer.korvance.com:3000/busqueda?operacion=${webhookData.operacion || 'venta'}&tipo=${webhookData.tipo || 'departamentos'}&barrio=${webhookData.barrio || 'palermo'}&ambientes=${webhookData.ambientes || ''}`;\n\n// Crear mensaje final de WhatsApp\nconst finalMessage = `¡Hola! Estuve escaneando el mercado y *encontré ${properties.length} opciones* interesantes con esos filtros.\\n\\nTe dejo mis destacadas:${resumenPropiedades}\\n\\n👉 *[Ver todo el listado completo aquí]*\\n${urlListadoDinamico}\\n\\n¿Te gustaría coordinar una visita para alguna de ellas?`;\n\n// Devolver la info estructurada\nreturn [{\n  json: {\n    hasResults: true,\n    contactId: webhookData.contactId || '',\n    whatsappMessage: finalMessage,\n    totalProperties: properties.length,\n    listUrl: urlListadoDinamico\n  }\n}];"
             },
             "id": "code-format",
-            "name": "Formatear Resultados",
+            "name": "Armar Mensaje WhatsApp",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
                 750,
                 300
-            ]
+            ],
+            "notesInFlow": true,
+            "notes": "Parsea el Data, formatea las mejores 3 opciones, e inventa el link universal al listado para el mensaje"
         },
         {
             "parameters": {
-                "method": "PUT",
-                "url": "=https://services.leadconnectorhq.com/contacts/{{$json.body.contactId}}",
+                "method": "POST",
+                "url": "https://services.leadconnectorhq.com/conversations/messages",
                 "authentication": "genericCredentialType",
                 "genericAuthType": "httpHeaderAuth",
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ JSON.stringify({ customFields: [ { id: '7IJuuuiPZZsoJ3CogBZ8', field_value: $('Formatear Resultados').item.json.summary }, { id: 'XXEy7AlJmE9PJu1bOQKs', field_value: $('Formatear Resultados').item.json.firstPropertyUrl } ] }) }}",
+                "jsonBody": "={{ JSON.stringify({\n  type: \"WhatsApp\",\n  contactId: $json.contactId,\n  message: $json.whatsappMessage\n}) }}",
                 "options": {
                     "response": {
                         "response": {
                             "fullResponse": false
                         }
                     }
+                },
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Version",
+                            "value": "2021-04-15"
+                        }
+                    ]
                 }
             },
-            "id": "ghl-update",
-            "name": "Actualizar GHL Opportunity",
+            "id": "ghl-send-message",
+            "name": "Enviar WhatsApp (API GHL)",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
                 1000,
-                200
+                300
             ],
             "credentials": {
                 "httpHeaderAuth": {
                     "id": "TU_CREDENTIAL_ID",
                     "name": "GHL API Key"
                 }
-            }
-        },
-        {
-            "parameters": {
-                "respondWith": "json",
-                "responseBody": "={{ JSON.stringify({ success: true, message: 'Pipeline ejecutado correctamente', totalProperties: $('Formatear Resultados').item.json.totalProperties, summary: $('Formatear Resultados').item.json.summary }) }}"
             },
-            "id": "respond-webhook",
-            "name": "Responder Webhook",
-            "type": "n8n-nodes-base.respondToWebhook",
-            "typeVersion": 1.1,
-            "position": [
-                1000,
-                400
-            ]
+            "notesInFlow": true,
+            "notes": "Envía el mensaje directamente al contacto asíncronamente."
         }
     ],
     "connections": {
-        "Webhook Trigger": {
+        "Webhook Trigger (Desde GHL)": {
             "main": [
                 [
                     {
-                        "node": "Buscar en Zonaprop",
+                        "node": "Buscar en Zonaprop (Scraper VPS)",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Buscar en Zonaprop": {
+        "Buscar en Zonaprop (Scraper VPS)": {
             "main": [
                 [
                     {
-                        "node": "Formatear Resultados",
+                        "node": "Armar Mensaje WhatsApp",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Formatear Resultados": {
+        "Armar Mensaje WhatsApp": {
             "main": [
                 [
                     {
-                        "node": "Actualizar GHL Opportunity",
-                        "type": "main",
-                        "index": 0
-                    },
-                    {
-                        "node": "Responder Webhook",
+                        "node": "Enviar WhatsApp (API GHL)",
                         "type": "main",
                         "index": 0
                     }

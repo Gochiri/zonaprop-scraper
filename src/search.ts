@@ -166,8 +166,8 @@ export async function searchZonaprop(urlOrFilters: string | SearchFilters, limit
       const rawText = container.text() || '';
 
       // Pricing
-      const priceMatch = rawText.match(/USD\s*[\d\.]+/);
-      const arsMatch = rawText.match(/\$\s*[\d\.]+/);
+      const priceMatch = rawText.match(/USD\s*\d+(?:\.\d{3})*/);
+      const arsMatch = rawText.match(/\$\s*\d+(?:\.\d{3})*/);
       const price = priceMatch ? priceMatch[0] : (arsMatch ? arsMatch[0] : '');
 
       // Location / Title
@@ -256,7 +256,7 @@ export async function searchZonaprop(urlOrFilters: string | SearchFilters, limit
     
     <header class="bg-white border-b border-zinc-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="h-10 object-contain">` : `<div class="font-extrabold text-2xl tracking-tight text-orange-600">Catálogo Exclusivo</div>`}
+            ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="h-10 object-contain">` : `<div class="font-extrabold text-2xl tracking-tight text-orange-600">Propiedades Seleccionadas</div>`}
             <div class="text-sm font-semibold text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
                 ${properties.length} Propiedades
             </div>
@@ -268,12 +268,12 @@ export async function searchZonaprop(urlOrFilters: string | SearchFilters, limit
         ${properties.map(p => {
     const vistaUrl = `${publicDomain}/vista/${p.zonapropId || 'error'}?url=${encodeURIComponent(p.link)}`;
     return `
-            <a href="${vistaUrl}" target="_blank" class="block group cursor-pointer">
-              <div class="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-auto md:h-56">
+            <a href="${vistaUrl}" class="block group cursor-pointer">
+              <div class="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row min-h-[14rem]">
                 <!-- Image Section -->
-                <div class="w-full md:w-[320px] h-56 md:h-full shrink-0 overflow-hidden relative">
-                  <img src="${p.image || 'https://via.placeholder.com/600x400?text=Sin+Foto'}" alt="Propiedad" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                  <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-zinc-800 shadow-sm">
+                <div class="w-full md:w-[320px] h-56 md:h-auto shrink-0 overflow-hidden relative">
+                  <img src="${p.image || 'https://via.placeholder.com/600x400?text=Sin+Foto'}" alt="Propiedad" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                  <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-zinc-800 shadow-sm z-10">
                     Destacado
                   </div>
                 </div>

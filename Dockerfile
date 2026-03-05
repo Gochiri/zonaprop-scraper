@@ -1,19 +1,19 @@
-# syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/playwright:v1.58.2-jammy
+FROM mcr.microsoft.com/playwright:v1.50.0-noble
 
 WORKDIR /app
 
-# Instalar dependencias primero (cacheado por Docker si no cambia package.json)
-COPY package*.json ./
-RUN npm ci
+# Copy package files
+COPY package.json package-lock.json* ./
 
-# Copiar código fuente y assets
-COPY src/ ./src/
-COPY assets/ ./assets/
-COPY tsconfig.json ./
+# Install dependencies including Playwright browsers
+RUN npm install
+RUN npx playwright install chromium
 
+# Copy the rest of the application
+COPY . .
+
+# Expose the API port
 EXPOSE 3000
 
-ENV NODE_ENV=production
-
-CMD ["npx", "tsx", "src/server.ts"]
+# Start the application using tsx
+CMD ["npm", "run", "start"]

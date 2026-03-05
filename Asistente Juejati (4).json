@@ -1,0 +1,1786 @@
+{
+  "name": "Asistente Juejati",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        5696
+      ],
+      "id": "fcc461e8-6bed-4e31-83a8-95ed499fc0f8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "NIG7Ypuh5LuKtomK",
+          "name": "OpenAi Juejati"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        5968
+      ],
+      "id": "c2b1ad71-dac5-426a-9255-85794cd2cb3c",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Asistente_Juejati_Brokers",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2416,
+        4848
+      ],
+      "id": "108dadae-7146-461b-becd-6362a1d4f7d1",
+      "name": "Webhook1",
+      "webhookId": "23b65fce-fb3f-4288-8027-c6c12e4e3d33",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8cc56139-8da8-441c-bd97-ab138b351c90",
+              "name": "mensajes",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        4832
+      ],
+      "id": "d3334906-f6a4-43c5-a31c-3f11a5ef4399",
+      "name": "Audio1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "62177803-8390-403d-a960-6b18d31d5225",
+                    "leftValue": "={{ $('Webhook1').item.json.body.customData.message_attachments }}",
+                    "rightValue": "mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31d64ca1-7506-47ee-a6ac-883e6cf9091c",
+                    "leftValue": "={{ $('Webhook1').item.json.body.customData.message_attachments }}",
+                    "rightValue": "jpg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "05a2bab0-91d1-4330-9e21-384b1f51e0a8",
+                    "leftValue": "=}{{ $('Webhook1').item.json.body.customData.message_attachments }}",
+                    "rightValue": "png",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f2ebc5da-e63d-4b7a-b439-49d1268748dd",
+                    "leftValue": "={{ $('Webhook1').item.json.body.customData.message_body }}",
+                    "rightValue": ">Image<",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -880,
+        5328
+      ],
+      "id": "4acd6cda-3feb-4198-8791-acbf15174b18",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "173e84aa-2529-41da-b02e-e70abab274db",
+              "name": "mensajes",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        5712
+      ],
+      "id": "7a831fe2-60ba-436f-ac9c-0cde8659568d",
+      "name": "Imagen1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a33f881d-4fd3-4691-9c94-a43da83ffe79",
+              "name": "string",
+              "value": "={{ $('Webhook1').item.json.body.customData.message_attachments }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        4832
+      ],
+      "id": "d1b237f8-97cc-4124-bbbc-244cbae50ced",
+      "name": "Edit Fields7"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        96,
+        4832
+      ],
+      "id": "0bbc699f-c688-40fa-8b58-b91338493049",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NIG7Ypuh5LuKtomK",
+          "name": "OpenAi Juejati"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.contact_id || $('Webhook1').item.json.body.contact_id }}",
+        "tableName": "n8n_chat_juejati",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        5696
+      ],
+      "id": "2c30b06b-0eb3-41f8-8e17-272389cd5bc5",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "aipgS7hYuaUdUWzx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tipo }}",
+                    "rightValue": "cabecera",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "aa5a69aa-0587-437f-8028-fb51908ccfc3"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "52df51cf-c372-457f-85be-05af4fed7f38",
+                    "leftValue": "={{ $json.tipo }}",
+                    "rightValue": "propiedad",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5751e028-5fac-439d-8472-f85a90881b66",
+                    "leftValue": "={{ $json.tipo }}",
+                    "rightValue": "pregunta_final",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2256,
+        5232
+      ],
+      "id": "c356a714-9eb5-4220-92ce-5dc20ba94d1a",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f0478e-b455-401e-a333-a8c5ee2f435a",
+              "name": "mensajes",
+              "value": "={{ $json.mensajes[2] }} {{ $json.mensajes[1] }} {{ $json.mensajes[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "a05dea00-7787-4303-a07b-92325524e1c5",
+              "name": "contact_id",
+              "value": "={{ $('Webhook1').item.json.body.contact_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        5264
+      ],
+      "id": "cecfb5cc-2183-4173-b160-3f1aa14b4543",
+      "name": "Texto2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f0478e-b455-401e-a333-a8c5ee2f435a",
+              "name": "Texto",
+              "value": "={{ $('Webhook1').item.json.body.customData.message_body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        5280
+      ],
+      "id": "394ba260-4a93-4348-a7f2-ff6b3ad01aff",
+      "name": "Texto4"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Webhook1').item.json.body.contact_id }}",
+        "messageData": "={{ $json.Texto }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        5280
+      ],
+      "id": "f48f013d-c13c-461f-a531-748b6c2d11e5",
+      "name": "Redis6",
+      "credentials": {
+        "redis": {
+          "id": "hn6EbepCB8amBUDs",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        5280
+      ],
+      "id": "902ab1be-641a-4176-86ea-1b49745bbbbc",
+      "name": "Wait29",
+      "webhookId": "df9185ec-7768-4386-86f9-054ba2345a82"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "=mensajes",
+        "key": "={{ $('Webhook1').item.json.body.contact_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        160,
+        5280
+      ],
+      "id": "f99f696e-fd32-4717-8696-73ac64b02792",
+      "name": "Redis7",
+      "credentials": {
+        "redis": {
+          "id": "hn6EbepCB8amBUDs",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d334fcc8-0632-4154-9b8e-a6b2df5fb48c",
+              "leftValue": "={{ $json.mensajes[0] }}",
+              "rightValue": "={{ $('Edit Fields8').item.json.text }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        5280
+      ],
+      "id": "cd3b4aa3-c7b5-4d24-8676-77d2c4b81381",
+      "name": "If39"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════\n// LEER MENSAJES DE GET_TOKKO O PROCESAR TEXTO DEL AI AGENT\n// ═══════════════════════════════════════════════════════\n\nconst inputText = $json.output || '';\n\nconsole.log('═══════════════════════════════════════');\nconsole.log('📝 CODE1 - PROCESANDO OUTPUT');\nconsole.log('═══════════════════════════════════════');\nconsole.log('Input length:', inputText.length);\n\n// Función para limpiar texto\nfunction limpiarTexto(texto) {\n  return texto\n    .replace(/(\\\\r\\\\n|\\\\r|\\\\n|\\\\\\\\n)/g, ' ')\n    .replace(/\\s{2,}/g, ' ')\n    .replace(/\\*\\*/g, '')\n    .trim();\n}\n\n// ─── DETECTAR TIPO DE MENSAJE ───\n// ACTUALIZADO: Detectar ambos formatos - markdown (**) y corchetes ([])\nconst tieneFormatoMarkdown = inputText.includes('**') || /\\d+\\)\\s*\\*\\*/.test(inputText);\nconst tieneFormatoCorchetes = /\\n\\[.+\\]\\n/.test(inputText) || /^\\[.+\\]\\n/m.test(inputText);\nconst tieneFormatoDePropiedad = tieneFormatoMarkdown || tieneFormatoCorchetes;\n\nconst tieneLink = inputText.includes('http') || inputText.includes('ficha.info');\n\nconsole.log('Tiene formato markdown:', tieneFormatoMarkdown);\nconsole.log('Tiene formato corchetes:', tieneFormatoCorchetes);\nconsole.log('Tiene links:', tieneLink);\n\n// ─── SI ES MENSAJE SIMPLE (sin formato) ───\nif (!tieneFormatoDePropiedad && inputText.length < 500) {\n  console.log('Mensaje simple detectado');\n  console.log('═══════════════════════════════════════');\n  \n  return [{\n    json: {\n      tipo: 'cabecera',\n      mensaje: limpiarTexto(inputText)\n    }\n  }];\n}\n\n// ─── DETECTAR SI HAY LINK DE LISTADO ───\nconst listingLinkMatch = inputText.match(/(https?:\\/\\/propiedades\\.selfhouse\\.online\\/propiedades\\/[^\\s\\)]+)/i);\n\nif (listingLinkMatch) {\n  const listingUrl = listingLinkMatch[1];\n  let mensaje = inputText.replace(listingUrl, '').trim();\n  mensaje = limpiarTexto(mensaje);\n  \n  if (!mensaje) mensaje = '🏠 Aquí tienes tu selección personalizada de propiedades';\n  \n  console.log('Link de listado detectado');\n  console.log('═══════════════════════════════════════');\n  \n  return [{\n    json: {\n      tipo: 'listado_zonaprop',\n      mensaje: mensaje,\n      listado_url: listingUrl,\n      mensaje_completo: `${mensaje}\\n\\n👉 Ver todas las propiedades: ${listingUrl}`\n    }\n  }];\n}\n\n// ═══════════════════════════════════════════════════════\n// PROCESAR MENSAJE CON PROPIEDADES\n// ═══════════════════════════════════════════════════════\n\nconsole.log('Procesando mensaje con formato de propiedades...');\n\nconst resultado = [];\n\n// ─── SEPARAR PREGUNTA FINAL ───\nconst preguntasFinales = [\n  /¿Te interesa alguna[^?]*\\?[^?]*\\?/i,\n  /¿Te interesa alguna[^?]*\\?/i,\n  /¿Querés que busque[^?]*\\?/i,\n  /¿Te gustaría[^?]*\\?/i,\n  /¿Necesitás[^?]*\\?/i\n];\n\nlet preguntaFinal = '';\nlet contenidoSinPregunta = inputText;\n\nfor (const regex of preguntasFinales) {\n  const match = inputText.match(regex);\n  if (match) {\n    preguntaFinal = match[0].trim();\n    contenidoSinPregunta = inputText.replace(regex, '').trim();\n    console.log('Pregunta final encontrada');\n    break;\n  }\n}\n\n// ═══════════════════════════════════════════════════════\n// DETECTAR Y PROCESAR SEGÚN FORMATO\n// ═══════════════════════════════════════════════════════\n\nif (tieneFormatoCorchetes && !tieneFormatoMarkdown) {\n  // ─── NUEVO FORMATO: [Título] + Precio + 🔗 ───\n  console.log('Procesando formato con corchetes...');\n  \n  // Buscar cabecera (texto antes del primer [Título])\n  const primeraPropiedad = contenidoSinPregunta.search(/\\n\\[.+\\]/);\n  \n  if (primeraPropiedad > 0) {\n    const cabecera = contenidoSinPregunta.substring(0, primeraPropiedad).trim();\n    if (cabecera) {\n      resultado.push({\n        json: {\n          tipo: 'cabecera',\n          mensaje: limpiarTexto(cabecera)\n        }\n      });\n      console.log('Cabecera agregada:', cabecera.substring(0, 50));\n    }\n  }\n  \n  // Dividir por propiedades - cada una empieza con [Título]\n  // Capturar bloques completos entre cada [Título]\n  const bloques = contenidoSinPregunta.split(/(?=\\n?\\[(?!Ver)[^\\]]+\\]\\n)/);\n  \n  let index = 0;\n  \n  bloques.forEach(bloque => {\n    // Verificar que es un bloque de propiedad\n    const tituloMatch = bloque.match(/^\\n?\\[([^\\]]+)\\]\\n/);\n    if (!tituloMatch) return;\n    \n    index++;\n    const titulo = tituloMatch[1].trim();\n    \n    // Extraer precio\n    const precioMatch = bloque.match(/Precio:\\s*([^\\n]+)/i);\n    const precio = precioMatch ? precioMatch[1].trim() : 'Consultar';\n    \n    // Extraer ubicación\n    const ubicacionMatch = bloque.match(/📍\\s*([^\\n]+)/);\n    const ubicacion = ubicacionMatch ? ubicacionMatch[1].trim() : '';\n    \n    // Extraer imagen (puede venir como 🖼️ URL o ![](URL))\n    let imagen = '';\n    const imagenMatch = bloque.match(/🖼️\\s*(https?:\\/\\/[^\\s\\n]+)/i) ||\n                        bloque.match(/!\\[.*?\\]\\((https?:\\/\\/[^\\)]+)\\)/) ||\n                        bloque.match(/imagen:\\s*(https?:\\/\\/[^\\s\\n]+)/i);\n    if (imagenMatch) {\n      imagen = imagenMatch[1].trim();\n    }\n    \n    // Extraer ficha\n    let ficha = '';\n    const fichaMatch = bloque.match(/🔗[^\\n]*:\\s*(https?:\\/\\/[^\\s\\n]+)/i) ||\n                       bloque.match(/\\[Ver ficha[^\\]]*\\]\\((https?:\\/\\/[^\\)]+)\\)/i) ||\n                       bloque.match(/(https?:\\/\\/ficha\\.info\\/[^\\s\\n\\)]+)/i);\n    if (fichaMatch) {\n      ficha = fichaMatch[1].trim();\n    }\n    \n    console.log(`Propiedad ${index}:`, {\n      titulo: titulo.substring(0, 30),\n      precio,\n      ubicacion,\n      imagen: imagen ? 'Sí' : 'No',\n      ficha: ficha ? 'Sí' : 'No'\n    });\n    \n    const mensajeObj = {\n      tipo: 'propiedad',\n      mensaje: limpiarTexto(`${titulo} - 🔥 Precio: ${precio}`),\n      propiedad_index: index,\n      titulo: titulo,\n      precio: precio,\n      ubicacion: ubicacion,\n      ficha: ficha,\n      message_attachments: []\n    };\n    \n    // Agregar imagen si existe\n    if (imagen) {\n      mensajeObj.message_attachments.push({ \n        type: 'image', \n        url: imagen \n      });\n    }\n    \n    // Agregar link de ficha\n    if (ficha) {\n      mensajeObj.message_attachments.push({ \n        type: 'link', \n        url: ficha, \n        title: 'Ver ficha completa' \n      });\n    }\n    \n    resultado.push({ json: mensajeObj });\n  });\n  \n  console.log('Propiedades encontradas (formato corchetes):', index);\n  \n} else {\n  // ─── FORMATO ORIGINAL: 1) **Título** ───\n  console.log('Procesando formato markdown...');\n  \n  // Buscar cabecera\n  const primeraPropiedad = contenidoSinPregunta.search(/\\d+\\)\\s*\\*\\*/);\n\n  if (primeraPropiedad > 0) {\n    const cabecera = contenidoSinPregunta.substring(0, primeraPropiedad).trim();\n    if (cabecera) {\n      resultado.push({\n        json: {\n          tipo: 'cabecera',\n          mensaje: limpiarTexto(cabecera)\n        }\n      });\n      console.log('Cabecera agregada');\n    }\n    contenidoSinPregunta = contenidoSinPregunta.substring(primeraPropiedad).trim();\n  }\n\n  // Dividir propiedades\n  const propiedadRegex = /(\\d+\\)\\s*\\*\\*[^*]+\\*\\*.*?)(?=\\d+\\)\\s*\\*\\*|$)/gs;\n  const matches = contenidoSinPregunta.match(propiedadRegex);\n\n  console.log('Propiedades encontradas:', matches ? matches.length : 0);\n\n  if (matches && matches.length > 0) {\n    matches.forEach((propiedad, index) => {\n      // Extraer título\n      const tituloMatch = propiedad.match(/\\d+\\)\\s*\\*\\*([^*]+)\\*\\*/);\n      const titulo = tituloMatch ? tituloMatch[1].trim() : `Propiedad ${index + 1}`;\n      \n      // Extraer precio\n      let precio = 'Consultar';\n      const lineaPrecio = propiedad.match(/Precio[:\\s]*([^\\n]+)/i);\n      \n      if (lineaPrecio) {\n        const textoPrecio = lineaPrecio[1].trim();\n        let match = textoPrecio.match(/(USD|ARS)\\s*([\\d.,]+)/i);\n        if (match) {\n          precio = `${match[1].toUpperCase()} ${match[2]}`;\n        }\n        else if (match = textoPrecio.match(/\\$\\s*([\\d.,]+)/)) {\n          precio = `USD ${match[1]}`;\n        }\n        else if (match = textoPrecio.match(/([\\d.,]+)\\s*(USD|ARS|dólares|pesos)/i)) {\n          const moneda = match[2].toLowerCase().includes('peso') ? 'ARS' : 'USD';\n          precio = `${moneda} ${match[1]}`;\n        }\n        else if (/consultar|a convenir/i.test(textoPrecio)) {\n          precio = 'Consultar';\n        }\n        else if (/\\d/.test(textoPrecio)) {\n          precio = textoPrecio;\n        }\n      }\n      \n      // Extraer imagen\n      const imagenMatch = propiedad.match(/!\\[.*?\\]\\(([^)]+)\\)/);\n      const imagen = imagenMatch ? imagenMatch[1] : '';\n      \n      // Extraer ficha\n      let ficha = '';\n      let fichaMatch = propiedad.match(/\\[Ver ficha[^\\]]*\\]\\(([^)]+)\\)/i);\n      if (!fichaMatch) {\n        fichaMatch = propiedad.match(/(https?:\\/\\/ficha\\.info\\/[^\\s\\)]+)/i);\n      }\n      if (!fichaMatch) {\n        fichaMatch = propiedad.match(/Ver ficha[^:]*:\\s*(https?:\\/\\/[^\\s]+)/i);\n      }\n      if (fichaMatch) {\n        ficha = fichaMatch[1];\n      }\n      \n      // Extraer ubicación\n      const ubicacionMatch = propiedad.match(/📍\\s*([^\\n]+)/);\n      const ubicacion = ubicacionMatch ? ubicacionMatch[1].trim() : '';\n      \n      console.log(`Propiedad ${index + 1}:`, {\n        titulo: titulo.substring(0, 30),\n        precio,\n        imagen: imagen ? 'Sí' : 'No',\n        ficha: ficha ? 'Sí' : 'No'\n      });\n      \n      const mensajeObj = {\n        tipo: 'propiedad',\n        mensaje: limpiarTexto(`${titulo} - 🔥 Precio: ${precio}`),\n        propiedad_index: index + 1,\n        titulo: titulo,\n        precio: precio,\n        ubicacion: ubicacion,\n        ficha: ficha,\n        message_attachments: []\n      };\n      \n      if (imagen) {\n        mensajeObj.message_attachments.push({ \n          type: 'image', \n          url: imagen \n        });\n      }\n      \n      if (ficha) {\n        mensajeObj.message_attachments.push({ \n          type: 'link', \n          url: ficha, \n          title: 'Ver ficha completa' \n        });\n      }\n      \n      resultado.push({ json: mensajeObj });\n    });\n  }\n}\n\n// ─── AGREGAR PREGUNTA FINAL ───\nif (preguntaFinal) {\n  resultado.push({\n    json: {\n      tipo: 'pregunta_final',\n      mensaje: limpiarTexto(preguntaFinal)\n    }\n  });\n  console.log('Pregunta final agregada');\n}\n\n// ─── SI NO HAY NADA, RETORNAR TODO COMO CABECERA ───\nif (resultado.length === 0) {\n  console.log('No se encontró formato, retornando todo como cabecera');\n  resultado.push({\n    json: {\n      tipo: 'cabecera',\n      mensaje: limpiarTexto(inputText)\n    }\n  });\n}\n\nconsole.log('Total mensajes generados:', resultado.length);\nconsole.log('═══════════════════════════════════════');\n\nreturn resultado;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        5232
+      ],
+      "id": "752a9e39-f831-4e92-a1fe-942fabe3d01f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "INcBp1Tsb3XE10fL",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/INcBp1Tsb3XE10fL",
+          "cachedResultName": "get_zona"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "queryzona": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('queryzona', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "queryzona"
+          ],
+          "schema": [
+            {
+              "id": "queryzona",
+              "displayName": "queryzona",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        5968
+      ],
+      "id": "3319bc3f-b549-4894-a6d9-3f1c235bdee7",
+      "name": "get_zona1"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro-preview-03-25",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro-preview-03-25"
+        },
+        "text": "Que es esta image",
+        "imageUrls": "={{ $('Webhook1').item.json.body.customData.message_attachments }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        5712
+      ],
+      "id": "bcb7c8c4-9339-444f-b360-2057c7c62c39",
+      "name": "Analyze image1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "azUN0DfduxglJ5B3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "p1",
+              "leftValue": "={{ $json.body.message.body }}",
+              "rightValue": "zonaprop",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "p2",
+              "leftValue": "={{ $json.body.message.body }}",
+              "rightValue": "argenprop",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "p3",
+              "leftValue": "={{ $json.body.message.body }}",
+              "rightValue": "mercadolibre.com.ar/inmuebles",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "p4",
+              "leftValue": "={{ $json.body.message.body }}",
+              "rightValue": "consulta-",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "dbeb253d-3f4e-4a1d-9cfe-a0f2463f46aa",
+      "name": "Portal_Detector1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1696,
+        4848
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.string }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        4832
+      ],
+      "id": "c984ce7f-02e9-42cb-96f9-77ade7352f7a",
+      "name": "HTTP Request11"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9511aa9d-9a02-4918-a745-07ff49676f69",
+              "name": "text",
+              "value": "={{ $json.Texto }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        5280
+      ],
+      "id": "7d0d807f-1993-47bc-83fa-6b3abf2b46fd",
+      "name": "Edit Fields8"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Webhook1').item.json.body.contact_id }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3392,
+        5216
+      ],
+      "id": "55f639b7-5f7c-447d-a4d1-8df5e96a0ee8",
+      "name": "Redis5",
+      "credentials": {
+        "redis": {
+          "id": "hn6EbepCB8amBUDs",
+          "name": "Redis account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2768,
+        5392
+      ],
+      "id": "3c7ecbce-26a1-4b3e-8757-838a1dda51ea",
+      "name": "Wait23",
+      "webhookId": "166a1e0d-9e37-4496-b3ce-4e6fa3f9d53a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/conversations/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-db71aca8-10cd-4e38-acf3-825fc2aea224"
+            },
+            {
+              "name": "Version",
+              "value": "2021-04-15"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\":       \"{{ $('Webhook1').item.json.body.customData.canal }}\",\n  \"contactId\":  \"{{ $('Webhook1').item.json.body.contact_id }}\",\n \"locationId\": \"WWrBqekGJCsCmSSvPzEf\",\n  \"fromNumber\": \"+15673648490\",\n  \"toNumber\":   \"{{ $('Webhook1').item.json.body.phone }}\",\n  \"message\":    \"{{ $json.titulo }} - 🔥 Precio: {{ $json.precio }} - 🔗 Ver ficha: {{ $json.ficha }}\",\n  \"attachments\": [\"{{ $json.message_attachments[0].url }}\"]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2944,
+        5392
+      ],
+      "id": "e950e98c-863d-43e1-9df2-513823187e8f",
+      "name": "Envio de Propiedades2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "668084ab-ef46-4714-9f64-dd7871927fb5",
+              "leftValue": "={{ $('Code').item.json.message_attachments[0].url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2576,
+        5376
+      ],
+      "id": "3eda0496-5ce3-4ebc-800e-eec520f79475",
+      "name": "If17"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/conversations/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-db71aca8-10cd-4e38-acf3-825fc2aea224"
+            },
+            {
+              "name": "Version",
+              "value": "2021-04-15"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "={{ $('Webhook1').item.json.body.customData.canal }}"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Webhook1').item.json.body.contact_id }}"
+            },
+            {
+              "name": "locationId",
+              "value": "WWrBqekGJCsCmSSvPzEf"
+            },
+            {
+              "name": "fromNumber",
+              "value": "=+15673648490"
+            },
+            {
+              "name": "toNumber",
+              "value": "={{ $('Webhook1').item.json.body.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.mensaje }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2784,
+        5648
+      ],
+      "id": "e7cf991f-9bcd-4dff-90f8-135d8b99f359",
+      "name": "Pregunta final2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/conversations/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Version",
+              "value": "2021-04-15"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer pit-db71aca8-10cd-4e38-acf3-825fc2aea224"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\":       \"{{ $('Webhook1').item.json.body.customData.canal }}\",\n  \"contactId\":  \"{{ $('Webhook1').item.json.body.contact_id }}\",\n \"locationId\": \"WWrBqekGJCsCmSSvPzEf\",\n  \"fromNumber\": \"+15673648490\",\n  \"toNumber\":   \"{{ $('Webhook1').item.json.body.phone }}\",\n  \"message\":    \"{{ $json.mensaje }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2816,
+        5216
+      ],
+      "id": "cda5f40e-0ca7-478a-86df-37c9600e8533",
+      "name": "Cabecera2"
+    },
+    {
+      "parameters": {
+        "url": "https://app.scrapingbee.com/api/v1/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "61AV00QNGZE78UT0VEU0SCOOQ44XRXGKE7R11PJ8OSBVUE20SWHNT0195M7Y5A853ZR9417OC0JLC4FP"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "render_js",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -240,
+        4400
+      ],
+      "id": "b958ba10-ea4e-4fc3-8d28-ae5f47d1294e",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "WTHzGoaGFU4xRQY3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/WTHzGoaGFU4xRQY3",
+          "cachedResultName": "sub: Buscar Propiedades"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_id', ``, 'string') }}",
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "data"
+          ],
+          "schema": [
+            {
+              "id": "query_id",
+              "displayName": "query_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1936,
+        5968
+      ],
+      "id": "aced93d5-e46a-4b56-b65b-a1fef8fad27c",
+      "name": "propiedades"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "fbgZDTDUO5tdmjnI",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/fbgZDTDUO5tdmjnI",
+          "cachedResultName": "resumen_info"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "zona": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('zona', ``, 'string') }}",
+            "intencion": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('intencion', ``, 'string') }}",
+            "presupuesto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('presupuesto', ``, 'string') }}",
+            "ambientes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ambientes', ``, 'string') }}",
+            "propiedad_de_interes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propiedad_de_interes', ``, 'string') }}",
+            "Tokko_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tokko_id', ``, 'string') }}",
+            "asesor": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('asesor', ``, 'string') }}",
+            "tipo_propiedad": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tipo_propiedad', ``, 'string') }}",
+            "query_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_id', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "resumen_info"
+          ],
+          "schema": [
+            {
+              "id": "zona",
+              "displayName": "zona",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "intencion",
+              "displayName": "intencion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tipo_propiedad",
+              "displayName": "tipo_propiedad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "presupuesto",
+              "displayName": "presupuesto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ambientes",
+              "displayName": "ambientes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "propiedad_de_interes",
+              "displayName": "propiedad_de_interes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Tokko_id",
+              "displayName": "Tokko_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "asesor",
+              "displayName": "asesor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query_id",
+              "displayName": "query_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        5968
+      ],
+      "id": "3a4cd0f7-57f0-4be1-ae8f-5317ac4c1929",
+      "name": "resumen_info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════\n// EXTRACTOR ROBUSTO DE DATOS DE PROPIEDADES - ARGENTINA\n// Soporta: Zonaprop, Argenprop, MercadoLibre, Tokko, otros\n// ═══════════════════════════════════════════════════════\n\nconst html = $json.data || \"\";\n\n// Estructura de salida con todos los campos posibles\nconst propiedad = {\n  // Identificación\n  titulo: \"\",\n  descripcion: \"\",\n  portal: \"\",\n  \n  // Ubicación\n  barrio: \"\",\n  localidad: \"\",\n  provincia: \"\",\n  direccion: \"\",\n  zona: \"\",\n  \n  // Características principales\n  tipo_propiedad: \"\", // departamento, casa, ph, etc.\n  operacion: \"\", // venta, alquiler\n  precio: \"\",\n  moneda: \"\",\n  expensas: \"\",\n  \n  // Espacios\n  ambientes: null,\n  dormitorios: null,\n  banos: null,\n  cocheras: null,\n  superficie_total: null,\n  superficie_cubierta: null,\n  \n  // Amenities\n  amenities: [],\n  \n  // Agente\n  asesor: \"\",\n  inmobiliaria: \"\",\n  telefono: \"\",\n  \n  // IDs y URLs\n  propiedad_id: \"\",\n  ficha_url: \"\",\n  fotos: [],\n  \n  // Metadata\n  fecha_publicacion: \"\",\n  antiguedad: \"\"\n};\n\n// ═══════════════════════════════════════════════════════\n// 1. DETECTAR PORTAL\n// ═══════════════════════════════════════════════════════\n\nconst urlMatch = html.match(/<link rel=[\"']canonical[\"'] href=[\"']([^\"']+)[\"']/i);\nif (urlMatch) {\n  propiedad.ficha_url = urlMatch[1];\n  \n  if (urlMatch[1].includes('zonaprop')) propiedad.portal = 'Zonaprop';\n  else if (urlMatch[1].includes('argenprop')) propiedad.portal = 'Argenprop';\n  else if (urlMatch[1].includes('mercadolibre')) propiedad.portal = 'MercadoLibre';\n  else if (urlMatch[1].includes('tokko')) propiedad.portal = 'Tokko';\n  else if (urlMatch[1].includes('properati')) propiedad.portal = 'Properati';\n  else propiedad.portal = 'Otro';\n}\n\n// ═══════════════════════════════════════════════════════\n// 2. EXTRACCIÓN DE DATOS BÁSICOS\n// ═══════════════════════════════════════════════════════\n\n// Título (eliminar marcas de portales)\nconst tituloMatch = html.match(/<title>([^<]+)<\\/title>/i);\nif (tituloMatch) {\n  propiedad.titulo = tituloMatch[1]\n    .replace(/\\s*-\\s*(Zonaprop|Argenprop|MercadoLibre|Properati).*$/i, \"\")\n    .trim();\n}\n\n// Descripción\nconst descripcionPatterns = [\n  /<meta name=[\"']description[\"'] content=[\"']([^\"']{20,}?)[\"']/i,\n  /<meta property=[\"']og:description[\"'] content=[\"']([^\"']{20,}?)[\"']/i\n];\nfor (const pattern of descripcionPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.descripcion = match[1].substring(0, 500).trim();\n    break;\n  }\n}\n\n// ═══════════════════════════════════════════════════════\n// 3. UBICACIÓN (con mejor detección de barrios CABA)\n// ═══════════════════════════════════════════════════════\n\nconst barriosCaba = [\n  'Palermo Chico', 'Palermo Hollywood', 'Palermo Soho', 'Palermo Viejo', 'Palermo',\n  'Recoleta', 'Belgrano Chico', 'Belgrano C', 'Belgrano R', 'Belgrano',\n  'Puerto Madero', 'Retiro', 'San Telmo', 'La Boca', 'Barracas',\n  'Caballito', 'Villa Crespo', 'Colegiales', 'Núñez', 'Nuñez',\n  'Saavedra', 'Villa Urquiza', 'Villa Devoto', 'Villa del Parque',\n  'Almagro', 'Boedo', 'Flores', 'Floresta', 'Paternal',\n  'Monserrat', 'Constitución', 'Villa Lugano', 'Liniers'\n];\n\n// Buscar barrio en el HTML\nfor (const barrio of barriosCaba) {\n  const regex = new RegExp(barrio, 'i');\n  if (regex.test(html)) {\n    propiedad.barrio = barrio;\n    propiedad.zona = 'CABA';\n    break;\n  }\n}\n\n// Localidad/Provincia (si no es CABA)\nif (!propiedad.barrio) {\n  const localidadMatch = html.match(/localidad[\"']?\\s*[:=]\\s*[\"']([^\"']+)[\"']/i);\n  if (localidadMatch) propiedad.localidad = localidadMatch[1];\n  \n  const provinciaMatch = html.match(/provincia[\"']?\\s*[:=]\\s*[\"']([^\"']+)[\"']/i);\n  if (provinciaMatch) propiedad.provincia = provinciaMatch[1];\n}\n\n// ═══════════════════════════════════════════════════════\n// 4. TIPO DE PROPIEDAD Y OPERACIÓN\n// ═══════════════════════════════════════════════════════\n\nconst tipos = {\n  'departamento': /departamento|depto|dto/i,\n  'casa': /casa\\b|house/i,\n  'ph': /\\bph\\b|p\\.h\\.|propiedad horizontal/i,\n  'oficina': /oficina|office/i,\n  'local': /local comercial|local\\b/i,\n  'terreno': /terreno|lote/i,\n  'cochera': /cochera|garage/i\n};\n\nfor (const [tipo, regex] of Object.entries(tipos)) {\n  if (regex.test(html)) {\n    propiedad.tipo_propiedad = tipo;\n    break;\n  }\n}\n\n// Operación\nif (/venta|compra|en venta/i.test(html)) {\n  propiedad.operacion = 'venta';\n} else if (/alquiler|renta|arriendo/i.test(html)) {\n  propiedad.operacion = 'alquiler';\n}\n\n// ═══════════════════════════════════════════════════════\n// 5. PRECIO (con normalización de moneda)\n// ═══════════════════════════════════════════════════════\n\nconst precioPatterns = [\n  /\"formattedAmount\"\\s*:\\s*\"([\\d\\.]+)\"/i,\n  /[\"']price[\"']\\s*:\\s*[\"'](USD|ARS)\\s*([\\d\\.]+)/i,\n  /(USD|ARS|U\\$S|\\$)\\s*([\\d\\.]+)/i,\n  /precio[\"']?\\s*[:=]\\s*[\"']?([\\d\\.]+)/i\n];\n\nfor (const pattern of precioPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    // Detectar moneda\n    const monedaMatch = match[0].match(/USD|ARS|U\\$S|\\$/i);\n    if (monedaMatch) {\n      const m = monedaMatch[0].toUpperCase();\n      propiedad.moneda = (m === 'U$S' || m === '$') ? 'USD' : m;\n    } else {\n      propiedad.moneda = 'USD'; // default\n    }\n    \n    // Extraer número sin puntos\n    const numero = match[match.length - 1].replace(/\\./g, \"\");\n    propiedad.precio = numero;\n    break;\n  }\n}\n\nif (!propiedad.precio) propiedad.precio = \"Consultar\";\n\n// Expensas\nconst expensasMatch = html.match(/expensas?\\s*[:=]?\\s*([\\d\\.]+)/i);\nif (expensasMatch) {\n  propiedad.expensas = expensasMatch[1].replace(/\\./g, \"\");\n}\n\n// ═══════════════════════════════════════════════════════\n// 6. CARACTERÍSTICAS (ambientes, dormitorios, baños)\n// ═══════════════════════════════════════════════════════\n\n// Ambientes\nconst ambientesPatterns = [\n  /(\\d+)\\s*ambientes?/i,\n  /[\"']ambientes?[\"']\\s*[:=]\\s*(\\d+)/i\n];\nfor (const pattern of ambientesPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.ambientes = parseInt(match[1], 10);\n    break;\n  }\n}\n\n// Dormitorios\nconst dormitoriosPatterns = [\n  /(\\d+)\\s*(?:dormitorios?|habitaciones?|cuartos?)/i,\n  /[\"']bedrooms?[\"']\\s*[:=]\\s*(\\d+)/i\n];\nfor (const pattern of dormitoriosPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.dormitorios = parseInt(match[1], 10);\n    break;\n  }\n}\n\n// Baños\nconst banosPatterns = [\n  /(\\d+)\\s*baños?/i,\n  /(\\d+)\\s*banos?/i,\n  /[\"']bathrooms?[\"']\\s*[:=]\\s*(\\d+)/i\n];\nfor (const pattern of banosPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.banos = parseInt(match[1], 10);\n    break;\n  }\n}\n\n// Cocheras\nconst cocherasMatch = html.match(/(\\d+)\\s*cocheras?/i);\nif (cocherasMatch) {\n  propiedad.cocheras = parseInt(cocherasMatch[1], 10);\n}\n\n// Superficie\nconst supPatterns = [\n  /(\\d+)\\s*m[²2]\\s*(?:totales?|total)?/i,\n  /superficie\\s*total[:\\s]*(\\d+)/i\n];\nfor (const pattern of supPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.superficie_total = parseInt(match[1], 10);\n    break;\n  }\n}\n\nconst supCubMatch = html.match(/(\\d+)\\s*m[²2]\\s*cubiertos?/i);\nif (supCubMatch) {\n  propiedad.superficie_cubierta = parseInt(supCubMatch[1], 10);\n}\n\n// ═══════════════════════════════════════════════════════\n// 7. AMENITIES\n// ═══════════════════════════════════════════════════════\n\nconst amenitiesList = [\n  'pileta', 'piscina', 'gimnasio', 'sum', 'quincho', 'parrilla',\n  'terraza', 'balcón', 'balcon', 'jardín', 'jardin', 'cochera',\n  'baulera', 'seguridad', 'portero', 'aire acondicionado',\n  'calefacción', 'calefaccion', 'laundry', 'lavadero'\n];\n\namenitiesList.forEach(amenity => {\n  const regex = new RegExp(amenity, 'i');\n  if (regex.test(html)) {\n    propiedad.amenities.push(amenity);\n  }\n});\n\n// ═══════════════════════════════════════════════════════\n// 8. AGENTE INMOBILIARIO\n// ═══════════════════════════════════════════════════════\n\nconst inmobiliariaMatch = html.match(/inmobiliaria[\"']?\\s*[:=]\\s*[\"']?([^\"'<>\\n]{3,50})/i);\nif (inmobiliariaMatch) {\n  propiedad.inmobiliaria = inmobiliariaMatch[1].trim();\n}\n\n// Teléfono\nconst telefonoMatch = html.match(/(?:tel[eé]fono|phone|contacto)[\"']?\\s*[:=]?\\s*[\"']?([\\d\\s\\-\\+\\(\\)]{8,20})/i);\nif (telefonoMatch) {\n  propiedad.telefono = telefonoMatch[1].replace(/\\s/g, '');\n}\n\n// ═══════════════════════════════════════════════════════\n// 9. IDs Y METADATA\n// ═══════════════════════════════════════════════════════\n\n// postingCode (ID de Zonaprop/Navent)\nconst postingPatterns = [\n  /[\"']postingCode[\"']\\s*:\\s*[\"']([A-Z0-9\\-]+)[\"']/i,\n  /postingCode[\"']?\\s*[:=]\\s*[\"']([A-Z0-9\\-]+)[\"']/i,\n  /id[-_]?aviso[\"']?\\s*[:=]\\s*[\"']?(\\d+)/i\n];\nfor (const pattern of postingPatterns) {\n  const match = html.match(pattern);\n  if (match) {\n    propiedad.propiedad_id = match[1];\n    break;\n  }\n}\n\n// Antigüedad\nconst antiguedadMatch = html.match(/(\\d+)\\s*años?\\s*(?:de\\s*)?antig[uü]edad/i);\nif (antiguedadMatch) {\n  propiedad.antiguedad = `${antiguedadMatch[1]} años`;\n}\n\n// ═══════════════════════════════════════════════════════\n// 10. FOTOS (sin duplicados, máximo 10)\n// ═══════════════════════════════════════════════════════\n\nconst fotosSet = new Set();\n\n// og:image\nconst ogImage = html.match(/<meta property=[\"']og:image[\"'] content=[\"']([^\"']+)[\"']/i);\nif (ogImage) fotosSet.add(ogImage[1]);\n\n// CDN de portales argentinos\nconst cdnPatterns = [\n  /https?:\\/\\/imgar\\.zonapropcdn\\.com\\/[^\\s\"'<>)]+/ig,\n  /https?:\\/\\/static\\.tokkobroker\\.com\\/[^\\s\"'<>)]+/ig,\n  /https?:\\/\\/http2\\.mlstatic\\.com\\/[^\\s\"'<>)]+/ig,\n  /https?:\\/\\/[^\\s\"'<>)]*\\.properati\\.com[^\\s\"'<>)]+/ig\n];\n\ncdnPatterns.forEach(pattern => {\n  const matches = html.match(pattern) || [];\n  matches.forEach(url => fotosSet.add(url));\n});\n\npropiedad.fotos = Array.from(fotosSet).slice(0, 10);\n\n// ═══════════════════════════════════════════════════════\n// 11. NORMALIZACIÓN Y DEFAULTS\n// ═══════════════════════════════════════════════════════\n\n// Título: si está vacío, generar uno descriptivo\nif (!propiedad.titulo) {\n  propiedad.titulo = [\n    propiedad.tipo_propiedad,\n    propiedad.ambientes ? `${propiedad.ambientes} amb` : '',\n    propiedad.barrio || propiedad.localidad,\n    propiedad.operacion\n  ].filter(Boolean).join(' ');\n}\n\n// Moneda default\nif (!propiedad.moneda && propiedad.precio !== \"Consultar\") {\n  propiedad.moneda = 'USD';\n}\n\n// Asesor default (Juejati)\nif (!propiedad.asesor) {\n  propiedad.asesor = \"Equipo Juejati\";\n}\n\n// ═══════════════════════════════════════════════════════\n// 12. LOG DE DEPURACIÓN\n// ═══════════════════════════════════════════════════════\n\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log('📊 EXTRACCIÓN COMPLETADA');\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log('Portal:', propiedad.portal);\nconsole.log('Título:', propiedad.titulo);\nconsole.log('Ubicación:', propiedad.barrio || propiedad.localidad);\nconsole.log('Precio:', propiedad.moneda, propiedad.precio);\nconsole.log('Tipo:', propiedad.tipo_propiedad);\nconsole.log('Operación:', propiedad.operacion);\nconsole.log('Características:', {\n  ambientes: propiedad.ambientes,\n  dormitorios: propiedad.dormitorios,\n  baños: propiedad.banos\n});\nconsole.log('Fotos encontradas:', propiedad.fotos.length);\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\n\nreturn [{ json: propiedad }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        4400
+      ],
+      "id": "640e26e1-89c8-4830-9f0e-3b385718d1f0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "712ce2a5-f5a9-4ede-9d6a-b85014dc5ca1",
+              "name": "mensajes",
+              "value": "=me intersa {{ $json.titulo }} en {{ $json.barrio }}  precio:{{ $json.precio }} asesor:{{ $json.asesor }} ambientes: {{ $json.ambientes }} ficha: {{ $json.propiedad_de_interes }} publiacion {{ $json.ficha_interna }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        4400
+      ],
+      "id": "d7d559df-cb9f-41b8-9ec7-ea7ad51e3f49",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "# ZONAPROP",
+        "height": 464,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        4208
+      ],
+      "typeVersion": 1,
+      "id": "9f16cf0f-7811-468d-bca6-f01453b478f1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# AUDIO\n",
+        "height": 336,
+        "width": 848,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        4688
+      ],
+      "typeVersion": 1,
+      "id": "d4d6a385-b640-4713-8f2f-6be96f5e078e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "name": "anadir_etiqueta",
+        "description": "Llama a esta función cuando debas etiquetar al usuario por lo siguiente:\n\npide_visita\nasistencia_humana\nlike_prop\ndetener IA",
+        "workflowId": {
+          "__rl": true,
+          "value": "nwerPlS1Gncba10Y",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/nwerPlS1Gncba10Y",
+          "cachedResultName": "añadir_etiquetas"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "queryid": "={{ $fromAI('queryid', ``, 'string') }}",
+            "tag": "={{ $fromAI('tag', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "queryid",
+              "displayName": "queryid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1504,
+        5984
+      ],
+      "id": "e6c7b33a-1729-4238-9389-73a38389a99e",
+      "name": "añadir_etiquetas"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer URL del texto\nconst text = $input.item.json.body.message.body;\n\n// Regex para encontrar URLs\nconst urlRegex = /(https?:\\/\\/[^\\s]+)/g;\nconst matches = text.match(urlRegex);\n\nif (!matches || matches.length === 0) {\n  throw new Error('No se encontró una URL válida en el mensaje');\n}\n\n// Tomar la primera URL encontrada\nlet url = matches[0];\n\n// Limpiar posibles caracteres al final\nurl = url.replace(/[.,;!?\\s]+$/, '');\n\nreturn {\n  json: {\n    url: url,\n    originalText: text\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        4688
+      ],
+      "id": "b6367fbb-1a06-4b84-844c-ed156a3a09c8",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensajes }}",
+        "options": {
+          "systemMessage": "=Eres Sofía, asesora virtual de Juejati Brokers con 10 años de experiencia. Tu función es asistir consultas sobre propiedades, calificar necesidades y mostrar opciones usando tools internos.\nNo estableces citas ni visitas, ni tenés la capacidad de coordinar agendas: la coordinación de visitas, turnos y confirmaciones la realiza exclusivamente un asesor humano. Cuando el usuario quiere avanzar (visita, reserva, documentación, negociación), derivás a un asesor humano.\n\nPARTE 1: ESTILO DE COMUNICACIÓN\n\nEspañol argentino neutro.\n\nRespuestas breves: máximo 2 frases.\n\nEmpática, clara y profesional.\n\nOrtografía impecable.\n\nTodas las preguntas llevan ¿?.\n\nUna sola pregunta por mensaje.\n\nNunca suenes a formulario: humano, simple, directo.\n\nRegla de oro (anti-alucinación):\nSi no tenés un dato confirmado por el usuario o por tools, decí que no podés confirmarlo y pedí 1 dato para avanzar.\n\nTools internas y silenciosas: think, propiedades, resumen_info, añadir_etiquetas, get_zona.\nNunca mencionás tools ni decís \"voy a buscar\".\n-----------------------------------------------------------\nPARTE 2: CAPTURA DE DATOS BÁSICOS (CON THINK)\n\nEn el primer mensaje del usuario en este flujo, capturá desde el webhook con think (si están disponibles):\n\ncontact_id: {{ $('Webhook1').item.json.body.contact_id }} (CRÍTICO: nunca lo pierdas, lo usarás como query_id/queryid)\n\nfirst_name: {{ $('Webhook1').item.json.body.first_name }}\nphone: {{ $('Webhook1').item.json.body.phone }}\nemail: {{ $('Webhook1').item.json.body.email }}\n\nGuardalo con think y mantenelo siempre.\n\nSi falta algún dato útil:\n\nSi falta nombre: Hola, soy Sofía de Juejati Brokers. ¿Cómo te llamás?\n\nSi falta WhatsApp y hace falta derivar: Para derivarte con un asesor, ¿me compartís tu WhatsApp con código de país?\n\nCada respuesta relevante del usuario se guarda con think como JSON incremental.\n--------------------------------------------------------\nPARTE 3: ROUTER DE INTENCIÓN (1 SOLO MODO)\n\nAntes de responder, clasificá el mensaje del usuario en UN solo modo con think:\n\nMODO_FICHA_PRIMER_MENSAJE\nPrimer mensaje con: \"ficha\", \"info\", link de portal (Zonaprop/Argenprop/Mercadolibre), o resumen tipo \"título/barrio/precio/ficha/url\".\nIMPORTANTE: En este modo YA TENÉS datos de la propiedad (título, barrio, precio, operación). NO preguntes lo que ya sabés.\n\nMODO_CONSULTA_ESPECIFICA\nReferencia concreta: dirección/calle, edificio, \"el de la terraza\", \"el de la foto\", \"el que me mandaste\".\n\nMODO_CONSULTA_GENERICA\nFiltros: zona, ambientes, presupuesto, tipo, venta/alquiler.\n\nMODO_SEGUIMIENTO\nYa vio opciones y ahora elige (\"la primera\", \"la de Palermo Chico\", \"la de USD X\") o cambia criterios.\n\nMODO_OTROS\nSaludos o temas fuera del flujo.\n\nEjemplo think: { \"modo\": \"MODO_CONSULTA_GENERICA\" }\n\nLuego aplicás solo la lógica del modo.\n\nPARTE 4: PARÁMETROS INTERNOS (THINK)\n\nPara consultas genéricas, extraé/guardá (si existen):\n\nqueryzona (ej: \"Palermo\")\nquerypropiedad (\"departamento\", \"casa\", \"PH\")\nqueryambientes (1..4)\nquerybudget_num (número, sin símbolos)\nquerymoneda (\"USD\" o \"ARS\" si el usuario lo dice)\nqueryoperacion (\"venta\" o \"alquiler\")\n\nPara consulta específica o ficha:\nquery_referencia (texto libre exacto)\n\nINFERENCIA AUTOMÁTICA DE OPERACIÓN:\n- Si el precio es > USD 10.000 → probablemente \"venta\"\n- Si el precio es < USD 10.000 → probablemente \"alquiler\"\n- Si la ficha/mensaje menciona \"venta\", \"compra\", \"invertir\" → \"venta\"\n- Si la ficha/mensaje menciona \"alquiler\", \"alquilar\", \"rentar\" → \"alquiler\"\n\nConversión ambientes (Argentina):\n1 ambiente = monoambiente (0 dormitorios)\n2 ambientes = 1 dormitorio\n3 ambientes = 2 dormitorios\n4 ambientes = 3 dormitorios\n\nImportante: Si ya tenés la operación por inferencia o por datos de la ficha, NO la preguntes.\n\nPARTE 5: LÓGICA POR MODO\n\n═══════════════════════════════════════════════════════\nMODO_FICHA_PRIMER_MENSAJE\n═══════════════════════════════════════════════════════\n\nObjetivo: El usuario ya mostró interés en una propiedad específica. Validá interés y ofrecé valor, SIN hacer preguntas redundantes.\n\nREGLA CRÍTICA: Si el mensaje trae datos de una ficha (título, barrio, precio, operación, URL), YA TENÉS esa información. NO preguntes:\n❌ \"¿Es para compra o alquiler?\" (ya lo sabés por el precio o la ficha)\n❌ \"¿Qué zona te interesa?\" (ya lo sabés por el barrio)\n❌ \"¿Cuántos ambientes buscás?\" (ya lo sabés por la ficha)\n\nFlujo:\n\n1. Guardá con think todos los datos que vengan en el mensaje:\n   - titulo, barrio, precio, operacion (inferida o explícita)\n   - propiedad_de_interes (URL o ID)\n   - asesor (si viene)\n\n2. Ejecutá propiedades para buscar la propiedad exacta o similares:\n   query: \"[título o dirección de la ficha]\"\n   query_id: contact_id\n\n3. Respondé confirmando el interés y ofreciendo valor:\n   \n   Si encontraste la propiedad exacta:\n   \"¡Hola [nombre]! Vi que te interesa [título] en [barrio]. Es una excelente opción. ¿Querés que te cuente más detalles o preferís coordinar una visita con un asesor?\"\n   No busques por el momento más opciones.\n\n   Si NO encontraste la exacta pero hay similares:\n   \"¡Hola [nombre]! Esa propiedad no la tengo en cartera, pero tengo opciones muy parecidas en [barrio]. ¿Querés que te las muestre?\"\n\n4. Guardá con resumen_info (silencioso):\n   queryid: contact_id\n   zona: [barrio de la ficha]\n   intencion: [venta/alquiler inferido]\n   tipo_propiedad: [tipo]\n   presupuesto: [precio de la ficha]\n   ambientes: [si está disponible]\n   propiedad_de_interes: [URL o ID]\n   asesor: [si viene]\n\n5. Etiquetas con añadir_etiquetas (silencioso) si aplica:\n   like_prop (siempre en este modo)\n   pide_visita, asistencia_humana, detener_ia (según corresponda)\n\n═══════════════════════════════════════════════════════\nMODO_CONSULTA_ESPECIFICA\n═══════════════════════════════════════════════════════\n\nGuardá: think { \"query_referencia\": \"...\" }\n\nEjecutá propiedades inmediatamente:\nquery: query_referencia\nquery_id: contact_id\n\nSi hay demasiados resultados, pedí 1 filtro (\"¿En qué barrio queda?\" o \"¿Es venta o alquiler?\").\n\nMostrá resultados (PARTE 6) y cerrá con 1 pregunta:\n\"¿Te interesa alguna de estas o querés que busque más parecidas?\"\n\nSi marca interés, guardá con resumen_info y etiquetá:\nlike_prop y/o pide_visita, asistencia_humana, detener_ia\n\n═══════════════════════════════════════════════════════\nMODO_CONSULTA_GENERICA\n═══════════════════════════════════════════════════════\n\nExtraé todo lo posible del texto (zona/tipo/ambientes/presupuesto/moneda/operación).\n\nREGLA DE OPERACIÓN:\n- Si ya tenés la operación guardada en think (de una ficha anterior o inferencia) → NO preguntes\n- Si el presupuesto permite inferir (>10K USD = venta, <10K = alquiler) → NO preguntes\n- SOLO preguntá operación si realmente no hay forma de saberlo\n\nSi falta 1 dato clave y NO se puede inferir, preguntá solo 1:\nZona / Presupuesto+moneda / Ambientes / Tipo\n\nCuando tengas lo mínimo:\nqueryzona, querypropiedad, queryambientes, querybudget_num, queryoperacion (inferida o confirmada)\n\nEjecutá propiedades con query estructurada:\nquery: \"zona:[queryzona];tipo:[querypropiedad];ambientes:[queryambientes];moneda:[querymoneda o USD];precio_min:0;precio_max:[querybudget_num];operacion:[queryoperacion]\"\nquery_id: contact_id\n\nMostrá propiedades (PARTE 6) y pregunta:\n\"¿Te interesa alguna en particular o querés que refine por barrio/amenities?\"\n\nGuardá con resumen_info (silencioso):\nqueryid, zona, intencion, tipo_propiedad, presupuesto, ambientes\n\n═══════════════════════════════════════════════════════\nMODO_SEGUIMIENTO\n═══════════════════════════════════════════════════════\n\nSi el usuario elige una (\"la primera\", \"la de USD X\"), identificá la propiedad del último set mostrado.\n\nGuardá con resumen_info:\nqueryid\npropiedad_de_interes (URL ficha)\nTokko_id (si existe)\nasesor (si existe)\n\nEtiquetas con añadir_etiquetas: like_prop y si pide visita pide_visita.\n\nRespuesta:\n\"Perfecto, la marco como propiedad de interés. ¿Querés que te derive con un asesor para avanzar?\"\n\n═══════════════════════════════════════════════════════\nMODO_OTROS\n═══════════════════════════════════════════════════════\n\nRespondé amable y reconducí suavemente:\n\"Dale, ¿estás buscando comprar o alquilar en qué zona?\"\n\nSi requiere humano (legal/contratos/negociación/visitas/turnos):\n\"Para eso te conviene hablar con un asesor del equipo. ¿Querés que te lo derive?\"\n\nañadir_etiquetas: asistencia_humana, detener_ia\n\nPARTE 6: FORMATO DE RESPUESTA CON PROPIEDADES\n\nReglas:\n\nUsá las URLs originales de imagen que devuelva el tool (ej. static.tokkobroker.com). No las modifiques.\n\nNo inventes precio, barrio o disponibilidad: si un campo viene vacío, mostrás \"Consultar\".\n\nFormato OBLIGATORIO por cada propiedad (incluí SIEMPRE la imagen):\n\n[Título]\nPrecio: [Moneda] [Monto] / \"Consultar\"\n📍 [Barrio / zona]\n🖼️ [imagen]\n🔗 Ver ficha completa: [link_web]\n\nCierre (1 pregunta):\n\nVarias: ¿Te interesa alguna de estas opciones o querés que ajuste la búsqueda?\n\nUna: ¿Querés avanzar con esta o preferís ver alternativas similares?\n\nPARTE 7: USO DE resumen_info Y añadir_etiquetas\n\nSiempre queryid = contact_id.\n\nEnviar solo campos con valor.\n\nNúmeros como string (ej: \"300000\", \"3\").\n\nTags:\nlike_prop, pide_visita, asistencia_humana, detener_ia\n\nPARTE 8: SIN RESULTADOS / DEMASIADOS RESULTADOS / CAMBIO DE CRITERIOS\n\nSin resultados:\n\"No encontré opciones que coincidan exacto. ¿Querés que flexibilice presupuesto o cambie de barrio?\"\n\nDemasiados resultados:\n\"Me aparecen muchas opciones. ¿Preferís Palermo Soho, Hollywood, Botánico o Chico?\"\n\nCambio de criterios:\n\"Perfecto, ¿qué querés modificar: zona, ambientes o presupuesto?\"\nLuego actualizás think y re-ejecutás propiedades, y actualizás resumen_info.\n\nPARTE 9: COORDINACIÓN DE VISITAS (REGLA CRÍTICA)\n\nSi el usuario pide visita / turno / agenda / coordinar horario, no ofrezcas horarios ni confirmes turnos.\n\nRespondé siempre así (1–2 frases + 1 pregunta):\n\n\"Perfecto. Yo no puedo coordinar visitas; eso lo maneja un asesor del equipo. ¿Querés que te lo derive para que te proponga horarios?\"\n\nPARTE 10: COMPLIANCE (IMPORTANTE)\n\nNo asesoramiento legal/tributario/contable: derivar.\n\nNo usar criterios discriminatorios sobre personas o grupos; redirigir a criterios de propiedad (zona, presupuesto, ambientes).\n\nNo prometer disponibilidad/condiciones fijas: puede cambiar.\n\nRECORDATORIOS FINALES\n\n✅ Router antes de responder\n✅ Ejecutá propiedades cuando tengas datos mínimos, sin pedir permiso\n✅ Tools y think siempre silenciosos\n✅ 2 frases máx + 1 pregunta\n✅ Visitas/turnos los coordina el asesor (vos no)\n✅ SIEMPRE incluí la imagen (🖼️) de cada propiedad\n✅ Si viene de una FICHA, ya tenés datos → NO preguntes lo obvio\n✅ Inferí operación por precio cuando sea posible (>50K = venta, <10K = alquiler)\n❌ No \"voy a buscar\" / no explicás tools\n❌ No inventar datos ni perder contact_id\n❌ No preguntar operación si ya la podés inferir"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        5072
+      ],
+      "id": "e03063f1-a4e1-4080-9afa-3953706531ee",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "devn8n.korvance.com",
+            "user-agent": "axios/1.13.2",
+            "content-length": "2380",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "traceparent": "00-9b70aa6daefc3e3c4ca2aaf20a03d9d0-d9ee6c0b0c4f7706-01",
+            "x-forwarded-for": "35.202.109.73",
+            "x-forwarded-host": "devn8n.korvance.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "246f0d97c983",
+            "x-real-ip": "35.202.109.73"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "contact_id": "NnSeEp1V3XxWXpJP0A85",
+            "first_name": "Lucero",
+            "full_name": "Lucero",
+            "phone": "+5491166120602",
+            "tags": "whatsapp,lead,5491122909629,ia activa,ingreso por ia,ia n8n activa",
+            "country": "AR",
+            "date_created": "2025-12-10T14:50:54.290Z",
+            "contact_source": "WhatsApp Integration",
+            "full_address": "",
+            "contact_type": "lead",
+            "location": {
+              "name": "JUEJATI BROKERS",
+              "address": "REPUBLICA ARABE SIRIA 2943",
+              "city": "CABA",
+              "state": "CABA",
+              "country": "AR",
+              "postalCode": "1425",
+              "fullAddress": "REPUBLICA ARABE SIRIA 2943, CABA CABA 1425",
+              "id": "WWrBqekGJCsCmSSvPzEf"
+            },
+            "user": {
+              "firstName": "ignacio",
+              "lastName": "juejati",
+              "email": "nisimj1980@gmail.com",
+              "phone": "+541160930858"
+            },
+            "message": {
+              "type": 20,
+              "body": "¡Hola! Quiero que me contacten por esta propiedad en   alquiler que vi en  Zonaprop. \n\nhttps://www.zonaprop.com.ar/propiedades/clasificado/alclapin-depto-4-amb-c-depend-flores-en-alquiler-recien-57122682.html\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 INFORMACIÓN DE CAMPAÑA / CAMPAIGN INFO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🎯 Punto de entrada:\n   • Fuente: click_to_chat_link\n   • Retraso: 1s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            },
+            "workflow": {
+              "id": "23b877fc-aaca-4ba6-a6b4-6a9cc652a3f2",
+              "name": "000 Nuevo Lead WA"
+            },
+            "triggerData": {},
+            "customData": {
+              "message_body": "¡Hola! Quiero que me contacten por esta propiedad en   alquiler que vi en  Zonaprop. \n\nhttps://www.zonaprop.com.ar/propiedades/clasificado/alclapin-depto-4-amb-c-depend-flores-en-alquiler-recien-57122682.html\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 INFORMACIÓN DE CAMPAÑA / CAMPAIGN INFO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🎯 Punto de entrada:\n   • Fuente: click_to_chat_link\n   • Retraso: 1s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+              "message_attachments": "",
+              "canal": "SMS",
+              "propiedad ": "",
+              "propiedadId": "",
+              "asesor": "",
+              "ambientes": "",
+              "intencion": "",
+              "Presupuesto": "",
+              "Barrio": ""
+            }
+          },
+          "webhookUrl": "https://devwebhookn8n.korvance.com/webhook/Asistente_Juejati_Brokers",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Portal_Detector1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze image1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze image1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Texto4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imagen1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Audio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "Cabecera2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If17",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pregunta final2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto4": {
+      "main": [
+        [
+          {
+            "node": "Redis6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait29": {
+      "main": [
+        [
+          {
+            "node": "Redis7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis7": {
+      "main": [
+        [
+          {
+            "node": "If39",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If39": {
+      "main": [
+        [
+          {
+            "node": "Texto2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_zona1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image1": {
+      "main": [
+        [
+          {
+            "node": "Imagen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Portal_Detector1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request11": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields8": {
+      "main": [
+        [
+          {
+            "node": "Wait29",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait23": {
+      "main": [
+        [
+          {
+            "node": "Envio de Propiedades2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envio de Propiedades2": {
+      "main": [
+        [
+          {
+            "node": "Redis5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If17": {
+      "main": [
+        [
+          {
+            "node": "Cabecera2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait23",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pregunta final2": {
+      "main": [
+        [
+          {
+            "node": "Redis5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cabecera2": {
+      "main": [
+        [
+          {
+            "node": "Redis5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "propiedades": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resumen_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "añadir_etiquetas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "VOGm6Ye44ijiFTRy",
+    "availableInMCP": true
+  },
+  "versionId": "5d0ebe9a-1dea-4d59-bb17-8a8eb094b969",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b2372f2635dd70951ede88a3062b4f50e8510b33f9ee8dc8789ff1da1d702e4"
+  },
+  "id": "iHjheY856dbxTDbQ",
+  "tags": [
+    {
+      "updatedAt": "2025-05-21T16:43:54.624Z",
+      "createdAt": "2025-05-21T16:43:54.624Z",
+      "id": "i8WKzHemnuyhAgSz",
+      "name": "Tokko"
+    }
+  ]
+}

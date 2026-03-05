@@ -2,8 +2,14 @@ version: '3.8'
 
 services:
   zonaprop-scraper:
-    image: ghcr.io/gochiri/zonaprop-scraper:latest
+    build: .
+    container_name: zonaprop-scraper
+    restart: always
     ports:
       - "3000:3000"
     environment:
+      - PUBLIC_URL=http://tu-ip-o-dominio:3000
+      - AGENCY_WHATSAPP=+5491112345678
       - NODE_ENV=production
+    # shm_size is important for Playwright to avoid crashing when grabbing complex pages
+    shm_size: '1gb'

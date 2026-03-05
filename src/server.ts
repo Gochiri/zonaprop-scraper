@@ -81,6 +81,25 @@ fastify.get('/vista/:id', async (request, reply) => {
   }
 });
 
+fastify.get('/busqueda', async (request, reply) => {
+  try {
+    const query = request.query as any;
+
+    if (!query.url && !query.tipo && !query.barrio && !query.operacion) {
+      return reply.code(400).type('text/html').send('<h1>Error: Debe proveer parámetros como tipo, operacion, barrio o url.</h1>');
+    }
+
+    fastify.log.info(`Renderizando vista de búsqueda para: ${JSON.stringify(query)}`);
+    // Limitar temporalmente a los primeros 10 sino tardaría mucho
+    const result = await searchZonaprop(query, 10);
+
+    return reply.type('text/html').send(result.html);
+  } catch (error: any) {
+    fastify.log.error(error);
+    return reply.code(500).type('text/html').send(`<h1>Error al cargar búsqueda:</h1><p>${error.message}</p>`);
+  }
+});
+
 const start = async () => {
   try {
     const port = 3000;
