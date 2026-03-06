@@ -87,8 +87,65 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     <title>${title} | Catálogo Exclusivo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .swiper {
+            width: 100%;
+            height: 100%;
+            border-radius: 1rem;
+        }
+        .swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .swiper-slide img:hover {
+            opacity: 0.9;
+        }
+        .swiper-pagination-bullet {
+            background: #fff;
+            opacity: 0.7;
+        }
+        .swiper-pagination-bullet-active {
+            background: #ff5a5f;
+            opacity: 1;
+        }
+        /* Style for Swiper navigation buttons */
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: white;
+            background: rgba(0, 0, 0, 0.4);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            backdrop-filter: blur(4px);
+        }
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+        @media (max-width: 768px) {
+            .swiper-button-next, .swiper-button-prev {
+                display: none; /* Hide arrows on mobile for cleaner look */
+            }
+        }
     </style>
 </head>
 <body class="bg-[#f9fafb] text-zinc-800 antialiased leading-relaxed">
@@ -110,14 +167,26 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
     <!-- Main Container matches preview_vista.html max-width 1100px -->
     <div class="max-w-[1100px] mx-auto px-5 py-8">
         
-        <!-- Gallery Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3 mb-8 h-[300px] md:h-[450px] rounded-2xl overflow-hidden">
-            <img src="${firstImage}" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity" alt="Vista principal" onclick="openLightbox(this.src)">
-            
-            <div class="hidden md:grid grid-cols-2 grid-rows-2 gap-3 h-full">
-                ${restImages.map((img: string) => `
-                    <img src="${img}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" alt="Propiedad" onclick="openLightbox(this.src)">
-                `).join('')}
+        <!-- Swiper Gallery -->
+        <div class="mb-8 h-[300px] md:h-[500px] rounded-2xl overflow-hidden shadow-sm border border-zinc-200 relative">
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    ${images.map((img: string) => `
+                        <div class="swiper-slide">
+                            <img src="${img}" alt="Propiedad ${zonapropId}" onclick="openLightbox(this.src)">
+                        </div>
+                    `).join('')}
+                    ${images.length === 0 ? `
+                        <div class="swiper-slide">
+                            <img src="https://via.placeholder.com/1200x800?text=Sin+Foto" alt="SinFoto">
+                        </div>
+                    ` : ''}
+                </div>
+                <!-- Add Pagination -->
+                <div class="swiper-pagination"></div>
+                <!-- Add Navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
             </div>
         </div>
 
@@ -168,7 +237,30 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
         <img id="lightbox-img" src="" class="max-w-[90vw] max-h-[90vh] rounded-lg object-contain">
     </div>
 
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <script>
+        // Initialize Swiper
+        const swiper = new Swiper('.mySwiper', {
+            slidesPerView: 1,
+            spaceBetween: 10,
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            keyboard: {
+                enabled: true,
+            },
+        });
+
         function openLightbox(src) {
             document.getElementById('lightbox-img').src = src;
             document.getElementById('lightbox').classList.remove('hidden');
@@ -180,6 +272,7 @@ export function renderRebrandedPropertyHtml(propertyData: any, zonapropId: strin
             document.getElementById('lightbox').classList.remove('flex');
             document.body.style.overflow = '';
         }
+        
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeLightbox();
         });
