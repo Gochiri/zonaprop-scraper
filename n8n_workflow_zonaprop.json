@@ -29,6 +29,7 @@
                 "jsonBody": "={{ JSON.stringify({ filters: { operacion: $json.body.operacion || 'venta', tipo: $json.body.tipo || 'departamentos', barrio: $json.body.barrio || 'palermo', ambientes: $json.body.ambientes || '', precioMin: $json.body.precioMin || '', precioMax: $json.body.precioMax || '', moneda: $json.body.moneda || 'dolares' } }) }}",
                 "options": {
                     "timeout": 120000,
+                    "allowUnauthorizedCerts": true,
                     "response": {
                         "response": {
                             "fullResponse": false
