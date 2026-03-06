@@ -2,13 +2,11 @@ version: '3.8'
 
 services:
   zonaprop-scraper:
-    build: .
-    container_name: zonaprop-scraper
+    image: ghcr.io/gochiri/zonaprop-scraper:latest
     environment:
       - PUBLIC_URL=https://catalogo.korvance.com
       - AGENCY_WHATSAPP=+5491112345678
       - NODE_ENV=production
-    shm_size: '1gb'
     networks:
       - korvancenet
     deploy:
