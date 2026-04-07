@@ -30,9 +30,9 @@ export interface SearchFilters {
 
 export function buildZonapropUrl(filters: SearchFilters): string {
   // Base parts
-  const tipo = filters.tipo || 'inmuebles';
-  const operacion = filters.operacion || ''; // sometimes left empty for all operations
-  const barrio = filters.barrio || 'capital-federal'; // default to CABA
+  const tipo = (filters.tipo || 'inmuebles').toLowerCase().replace(/\s+/g, '-');
+  const operacion = (filters.operacion || '').toLowerCase(); // sometimes left empty for all operations
+  const barrio = (filters.barrio || 'capital-federal').toLowerCase().replace(/\s+/g, '-'); // default to CABA
 
   let parts = [tipo];
   if (operacion) parts.push(operacion);
